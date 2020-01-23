@@ -109,6 +109,7 @@ license {
     // Apply licenses only to main source set
     sourceSets = [project.sourceSets.main]
     include "**/*.java"
+    exclude '**/PlayerSkins.java'
 
     newLine = false // Disables the empty line between the header and package name
     //ignoreFailures = true //Ignore failures and only print a warning on license violations

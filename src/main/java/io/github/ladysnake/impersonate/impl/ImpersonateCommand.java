@@ -25,7 +25,7 @@ public final class ImpersonateCommand {
             .requires(s -> s.hasPermissionLevel(2))
             .then(literal("disguise")
                 .then(literal("as")
-                    .then(argument("disguise", GameProfileArgumentType.gameProfile()))
+                    .then(argument("disguise", GameProfileArgumentType.gameProfile())
                         .executes(context -> startImpersonation(context.getSource(), GameProfileArgumentType.getProfileArgument(context, "disguise"), Collections.singleton(context.getSource().getPlayer())))
                         .then(argument("targets", EntityArgumentType.players())
                             .executes(context -> startImpersonation(context.getSource(), GameProfileArgumentType.getProfileArgument(context, "disguise"), EntityArgumentType.getPlayers(context, "targets")))
@@ -38,7 +38,8 @@ public final class ImpersonateCommand {
                         .executes(context -> stopImpersonation(context.getSource(), EntityArgumentType.getPlayers(context, "targets")))
                     )
                 )
-            );
+            )
+        );
     }
 
     private static int stopImpersonation(ServerCommandSource source, Collection<ServerPlayerEntity> players) {

@@ -58,4 +58,11 @@ public interface Impersonator extends Component {
      */
     @NotNull
     GameProfile getEditedProfile();
+
+    /**
+     * Returns {@code true} if the player should mimic cape and elytra textures of impersonated players.
+     *
+     * @return {@code true} if the player should fake capes and elytra textures
+     */
+    boolean shouldFakeCape();
 }

@@ -25,7 +25,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Final
     private GameProfile gameProfile;
     @Unique
-    private Impersonator impersonate_self = Impersonate.IMPERSONATION.get(this);    // cache the component for faster access
+    protected Impersonator impersonate_self = Impersonate.IMPERSONATION.get(this);    // cache the component for faster access
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);

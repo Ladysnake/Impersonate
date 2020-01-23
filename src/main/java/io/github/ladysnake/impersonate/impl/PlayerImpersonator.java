@@ -38,6 +38,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     private GameProfile impersonatedProfile;
     @Nullable
     private GameProfile editedProfile;
+    private boolean fakeCape;
 
     public PlayerImpersonator(@NotNull PlayerEntity player) {
         this.player = player;
@@ -97,6 +98,11 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         return this.editedProfile == null ? this.getActualProfile() : this.editedProfile;
     }
 
+    @Override
+    public boolean shouldFakeCape() {
+        return this.fakeCape;
+    }
+
     private static final int ID_PRESENT = 0b01;
     private static final int NAME_PRESENT = 0b10;
 
@@ -112,6 +118,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         if (name != null) {
             buf.writeString(name);
         }
+        buf.writeBoolean(this.player.world.getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES));
     }
 
     @Override
@@ -130,6 +137,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         } else {
             this.stopImpersonation();
         }
+        this.fakeCape = buf.readBoolean();
     }
 
     @Override

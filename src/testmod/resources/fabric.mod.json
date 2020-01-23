@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "impersonatest",
+  "version": "${version}",
+  "name": "Impersonate Test",
+  "description": "It's just a test... Or is it ?",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    "Pyrofab"
+  ],
+  "contact": {
+    "sources": "https://github.com/Ladysnake/Impersonate",
+    "issues": "https://github.com/Ladysnake/Impersonate/issues",
+    "discord": "ladysnake.glitch.me/discord"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.ladysnake.impersonatest.Impersonatest"
+    ]
+  },
+  "depends": {
+    "fabric": "*"
+  }
+}

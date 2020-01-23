@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "impersonate",
+  "version": "${version}",
+  "name": "Impersonate",
+  "icon": "assets/impersonate/icon.png",
+  "description": "A library to let players impersonate others",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    "Pyrofab"
+  ],
+  "contact": {
+    "sources": "https://github.com/Ladysnake/Impersonate",
+    "issues": "https://github.com/Ladysnake/Impersonate/issues",
+    "discord": "ladysnake.glitch.me/discord"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.ladysnake.impersonate.Impersonate"
+    ]
+  },
+  "mixins": [
+    {
+      "environment": "*",
+      "config": "mixins.impersonate.common.json"
+    }
+  ],
+  "depends": {
+    "fabric": "*"
+  },
+  "custom": {
+    "modmenu:api": true
+  }
+}

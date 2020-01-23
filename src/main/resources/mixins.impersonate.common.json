@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "io.github.ladysnake.impersonate.impl.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.7.11-SNAPSHOT",
+  "mixins": [
+
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,116 @@
+import net.fabricmc.loom.task.RemapJarTask
+
+import java.time.Year
+
+plugins {
+    id 'fabric-loom' version '0.2.6-SNAPSHOT'
+    id "net.minecrell.licenser" version "0.4.1"
+    id 'com.matthewprenger.cursegradle' version '1.4.0'
+    id "com.jfrog.bintray" version '1.8.4'
+    id 'org.ajoberstar.grgit' version '3.1.1'
+    id 'com.github.breadmoirai.github-release' version '2.2.9'
+    id 'java-library'
+    id 'maven-publish'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+sourceSets {
+    testmod {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+    }
+}
+
+minecraft {
+}
+
+dependencies {
+    //to change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    api "org.jetbrains:annotations:17.0.0"
+
+    testmodCompile sourceSets.main.output
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "fabric.mod.json"
+        expand "version": project.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "fabric.mod.json"
+    }
+}
+
+// ensure that the encoding is set to UTF-8, no matter what the system default is
+// this fixes some edge cases with special characters not displaying correctly
+// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+// if it is present.
+// If you remove this task, sources will not be generated.
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = "sources"
+    from sourceSets.main.allSource
+}
+
+task testmodJar(type: Jar, dependsOn: testmodClasses) {
+    archiveBaseName = 'PalTest'
+    archiveClassifier = 'dev'
+    from(sourceSets.testmod.output) {
+        include 'fabric.mod.json'
+        expand 'version': project.version
+    }
+    from(sourceSets.testmod.output) {
+        exclude 'fabric.mod.json'
+    }
+}
+
+task remapTestmodJar(type: RemapJarTask, dependsOn: project.testmodJar) {
+    archiveBaseName = 'ImpersonateTest'
+    input = testmodJar.archiveFile
+    addNestedDependencies = false
+}
+
+build.dependsOn(remapTestmodJar)
+
+license {
+    header = rootProject.file("code_quality/${project.license_header}_HEADER.txt")
+
+    // Apply licenses only to main source set
+    sourceSets = [project.sourceSets.main]
+    include "**/*.java"
+
+    newLine = false // Disables the empty line between the header and package name
+    //ignoreFailures = true //Ignore failures and only print a warning on license violations
+
+    //export variables
+    ext {
+        year = Year.now()
+        projectDisplayName = project.name
+        projectOwners = rootProject.owners
+        if (project.license_header.contains('GPL')) {
+            if (!project.hasProperty("gpl_version")) {
+                throw new RuntimeException("GPL version needs to be specified through the 'gpl_version' property")
+            }
+            gplVersion = project.gpl_version
+        }
+    }
+}
+
+apply from: 'release.gradle'

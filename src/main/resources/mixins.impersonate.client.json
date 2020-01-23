@@ -4,7 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7.11-SNAPSHOT",
   "mixins": [
-
+    "PlayerEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

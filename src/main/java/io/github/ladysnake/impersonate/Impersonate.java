@@ -18,6 +18,7 @@
 package io.github.ladysnake.impersonate;
 
 import io.github.ladysnake.impersonate.impl.ImpersonateCommand;
+import io.github.ladysnake.impersonate.impl.PlayerImpersonator;
 import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.EntityComponentCallback;
@@ -32,7 +33,7 @@ public final class Impersonate implements ModInitializer {
     public static final ComponentType<Impersonator> IMPERSONATION = ComponentRegistry.INSTANCE.registerIfAbsent(
         new Identifier("impersonate", "impersonation"),
         Impersonator.class
-    ).attach(EntityComponentCallback.event(PlayerEntity.class), Impersonator::get);
+    ).attach(EntityComponentCallback.event(PlayerEntity.class), PlayerImpersonator::new);
 
     @Override
     public void onInitialize() {

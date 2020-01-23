@@ -1,9 +1,9 @@
 package io.github.ladysnake.impersonate.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
+import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
-import io.github.ladysnake.impersonate.impl.PlayerImpersonator;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,7 +25,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Final
     private GameProfile gameProfile;
     @Unique
-    private Impersonator impersonate_self = new PlayerImpersonator((PlayerEntity) (Object) this);
+    private Impersonator impersonate_self = Impersonate.IMPERSONATION.get(this);    // cache the component for faster access
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);

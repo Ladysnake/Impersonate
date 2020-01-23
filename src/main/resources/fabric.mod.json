@@ -24,10 +24,16 @@
     {
       "environment": "*",
       "config": "mixins.impersonate.common.json"
+    },
+    {
+      "environment": "client",
+      "config": "mixins.impersonate.client.json"
     }
   ],
   "depends": {
-    "fabric": "*"
+    "minecraft": ">=1.15",
+    "fabric": "*",
+    "cardinal-components-entity": "^2.2.0"
   },
   "custom": {
     "modmenu:api": true

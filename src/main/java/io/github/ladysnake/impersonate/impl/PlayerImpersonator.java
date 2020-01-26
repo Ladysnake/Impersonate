@@ -22,13 +22,17 @@ import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.util.sync.EntitySyncedComponent;
+import net.minecraft.client.network.packet.PlayerListS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
@@ -71,10 +75,36 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     @Override
     public void stopImpersonation() {
         if (this.isImpersonating()) {
+            assert this.impersonatedProfile != null;
+            // if the player was the only one impersonating
+            updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
             this.impersonatedProfile = null;
             this.editedProfile = null;
+            updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
             this.sync();
         }
+    }
+
+    private void updatePlayerLists(PlayerListS2CPacket.Action action) {
+        if (!player.world.isClient) {
+            PlayerManager playerManager = ((ServerPlayerEntity) player).server.getPlayerManager();
+            if (isAloneOnServer(playerManager)) {
+                playerManager.sendToAll(new PlayerListS2CPacket(action, (ServerPlayerEntity) this.player));
+            }
+        }
+    }
+
+    private boolean isAloneOnServer(PlayerManager playerManager) {
+        for (ServerPlayerEntity otherPlayer : playerManager.getPlayerList()) {
+            if (this.isSamePersonAs(otherPlayer)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isSamePersonAs(ServerPlayerEntity otherPlayer) {
+        return otherPlayer != this.player && (Objects.equals(this.impersonatedProfile, Impersonator.get(otherPlayer).getImpersonatedProfile()) || Objects.equals(this.impersonatedProfile, otherPlayer.getGameProfile()));
     }
 
     @Override

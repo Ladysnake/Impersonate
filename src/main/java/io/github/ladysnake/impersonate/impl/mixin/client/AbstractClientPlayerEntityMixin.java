@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractClientPlayerEntity.class)
-public abstract class AbstractPlayerEntityMixin extends PlayerEntityMixin {
-    protected AbstractPlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
+public abstract class AbstractClientPlayerEntityMixin extends PlayerEntityMixin {
+    protected AbstractClientPlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
     }
 

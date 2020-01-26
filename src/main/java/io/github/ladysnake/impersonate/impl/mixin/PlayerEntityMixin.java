@@ -3,11 +3,11 @@ package io.github.ladysnake.impersonate.impl.mixin;
 import com.mojang.authlib.GameProfile;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
+import io.github.ladysnake.impersonate.impl.ImpersonateText;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -24,6 +24,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Shadow
     @Final
     private GameProfile gameProfile;
+
     @Unique
     protected Impersonator impersonate_self = Impersonate.IMPERSONATION.get(this);    // cache the component for faster access
 
@@ -55,8 +56,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @ModifyArg(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team;modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/Text;"))
     private Text fakeDisplayName(Text original) {
+        // No need to fake on clients, as #fakeGameProfile already covers it
         if (!world.isClient && impersonate_self.isImpersonating()) {
-            return new LiteralText(this.impersonate_self.getEditedProfile().getName());
+            return ImpersonateText.get((PlayerEntity) (Object) this);
         }
         return original;
     }

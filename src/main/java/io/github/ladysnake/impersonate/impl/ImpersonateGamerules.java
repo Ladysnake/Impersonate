@@ -18,6 +18,9 @@ public final class ImpersonateGamerules {
             }
         }));
 
+    public static final GameRules.RuleKey<GameRules.BooleanRule> OP_REVEAL_IMPERSONATIONS =
+        register("impersonate:opRevealImpersonations", createBooleanRule(true, (server, rule) -> {}));
+
     public static GameRules.RuleType<GameRules.BooleanRule> createBooleanRule(boolean initialValue, BiConsumer<MinecraftServer, GameRules.BooleanRule> changeCallback) {
         return RuleTypeAccessor.invokeNew(BoolArgumentType::bool, type -> new GameRules.BooleanRule(type, initialValue), changeCallback);
     }

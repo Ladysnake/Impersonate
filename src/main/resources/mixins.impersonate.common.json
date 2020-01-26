@@ -4,10 +4,15 @@
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7.11-SNAPSHOT",
   "mixins": [
+    "ChatMessageS2CPacketAccessor",
     "GameRulesAccessor",
     "GameRulesMixin",
+    "MinecraftServerMixin",
     "PlayerEntityMixin",
-    "RuleTypeAccessor"
+    "PlayerListS2CPacketMixin",
+    "RuleTypeAccessor",
+    "ServerPlayNetworkHandlerMixin",
+    "TextMixin"
   ],
   "injectors": {
     "defaultRequire": 1

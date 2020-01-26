@@ -29,12 +29,38 @@ public interface Impersonator extends Component {
         return ((PlayerEntityExtensions) player).impersonate_getAsImpersonator();
     }
 
+    /**
+     * Start impersonating a player designated by {@code profile}.
+     *
+     * <p> {@code profile} <em>may or may not</em> designate a player that is connected on the same server
+     * as the impersonating player. Impersonations of offline players are valid.
+     *
+     * <p> If the player is currently impersonating {@code profile} (ie. {@code profile.equals(getImpersonatedProfile())}),
+     * this method does nothing. If the player is impersonating someone else, this method will first
+     * {@linkplain #stopImpersonation() stop the current impersonation}.
+     *
+     * @param profile the {@code GameProfile} of the player to impersonate
+     */
     void impersonate(@NotNull GameProfile profile);
 
+    /**
+     * Stops an ongoing impersonation.
+     */
     void stopImpersonation();
 
+    /**
+     * Returns {@code true} if this player is currently impersonating another player.
+     *
+     * @return {@code true} if this player is currently impersonating someone, and {@code false} otherwise
+     */
     boolean isImpersonating();
 
+    /**
+     * Returns the profile of the player that's being impersonated, or {@code null} if no impersonation
+     * is taking place (ie. {@link #isImpersonating()} returns {@code false}).
+     *
+     * @return the impersonated profile, or {@code null} if no impersonation is taking place
+     */
     @Nullable
     GameProfile getImpersonatedProfile();
 
@@ -61,6 +87,9 @@ public interface Impersonator extends Component {
 
     /**
      * Returns {@code true} if the player should mimic cape and elytra textures of impersonated players.
+     *
+     * <p> Whether players are allowed to fake capes is determined by the value of the
+     * {@code impersonate:fakeCapes} gamerule.
      *
      * @return {@code true} if the player should fake capes and elytra textures
      */

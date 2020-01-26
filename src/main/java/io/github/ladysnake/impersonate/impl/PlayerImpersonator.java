@@ -63,26 +63,24 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     @Override
     public void impersonate(@NotNull GameProfile profile) {
         if (this.getImpersonatedProfile() != profile) {
-            if (this.isImpersonating()) {
-                this.stopImpersonation();
-            }
-            this.impersonatedProfile = profile;
-            this.editedProfile = new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
-            this.sync();
+            this.stopImpersonation();
+            this.setImpersonatedProfile(profile);
         }
     }
 
     @Override
     public void stopImpersonation() {
         if (this.isImpersonating()) {
-            assert this.impersonatedProfile != null;
-            // if the player was the only one impersonating
-            updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
-            this.impersonatedProfile = null;
-            this.editedProfile = null;
-            updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
-            this.sync();
+            this.setImpersonatedProfile(null);
         }
+    }
+
+    private void setImpersonatedProfile(@Nullable GameProfile profile) {
+        updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
+        this.impersonatedProfile = profile;
+        this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
+        updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
+        this.sync();
     }
 
     private void updatePlayerLists(PlayerListS2CPacket.Action action) {

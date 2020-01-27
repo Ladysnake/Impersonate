@@ -79,11 +79,13 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     }
 
     @Override
-    public void stopImpersonation(@NotNull Identifier key) {
+    public GameProfile stopImpersonation(@NotNull Identifier key) {
         if (this.isImpersonating()) {
-            this.stackedImpersonations.remove(key);
-            resetImpersonation();
+            GameProfile ret = this.stackedImpersonations.remove(key);
+            this.resetImpersonation();
+            return ret;
         }
+        return null;
     }
 
     private void resetImpersonation() {

@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface Impersonator extends Component {
-    static Impersonator get(PlayerEntity player) {
+    static Impersonator get(@NotNull PlayerEntity player) {
         return ((PlayerEntityExtensions) player).impersonate_getAsImpersonator();
     }
 
@@ -54,9 +54,10 @@ public interface Impersonator extends Component {
      * Stops an ongoing impersonation.
      *
      * @param key the key identifying the source of the impersonation
+     * @return the game profile that was impersonated under that impersonation key
      * @see #impersonate(Identifier, GameProfile)
      */
-    void stopImpersonation(@NotNull Identifier key);
+    @Nullable GameProfile stopImpersonation(@NotNull Identifier key);
 
     /**
      * Returns {@code true} if this player is currently impersonating another player.
@@ -71,16 +72,14 @@ public interface Impersonator extends Component {
      *
      * @return the impersonated profile, or {@code null} if no impersonation is taking place
      */
-    @Nullable
-    GameProfile getImpersonatedProfile();
+    @Nullable GameProfile getImpersonatedProfile();
 
     /**
      * Returns the player's actual {@link GameProfile}, disregarding any impersonation.
      *
      * @return the player's actual profile
      */
-    @NotNull
-    GameProfile getActualProfile();
+    @NotNull GameProfile getActualProfile();
 
     /**
      * Returns the player's profile, edited to account for an ongoing impersonation.
@@ -92,8 +91,7 @@ public interface Impersonator extends Component {
      *
      * @return the player's current, possibly faked, profile
      */
-    @NotNull
-    GameProfile getEditedProfile();
+    @NotNull GameProfile getEditedProfile();
 
     /**
      * Returns {@code true} if the player should mimic cape and elytra textures of impersonated players.

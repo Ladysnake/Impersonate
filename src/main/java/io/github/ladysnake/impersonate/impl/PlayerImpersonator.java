@@ -28,16 +28,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     @NotNull
     private PlayerEntity player;
+    private Map<Identifier, GameProfile> stackedImpersonations = new LinkedHashMap<>();
     @Nullable
     private GameProfile impersonatedProfile;
     @Nullable
@@ -61,18 +62,29 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     }
 
     @Override
-    public void impersonate(@NotNull GameProfile profile) {
+    public void impersonate(@Nullable Identifier key, @NotNull GameProfile profile) {
         if (this.getImpersonatedProfile() != profile) {
             this.stopImpersonation();
+            if (key != null) {
+                this.stackedImpersonations.put(key, profile);
+            }
             this.setImpersonatedProfile(profile);
         }
     }
 
     @Override
-    public void stopImpersonation() {
+    public void stopImpersonation(@Nullable Identifier key) {
         if (this.isImpersonating()) {
-            this.setImpersonatedProfile(null);
+            this.stackedImpersonations.remove(key);
+            this.setImpersonatedProfile(getLastImpersonation());
         }
+    }
+
+    private GameProfile getLastImpersonation() {
+        GameProfile active = null;
+        Iterator<GameProfile> it = this.stackedImpersonations.values().iterator();
+        while (it.hasNext()) active = it.next();
+        return active;
     }
 
     private void setImpersonatedProfile(@Nullable GameProfile profile) {

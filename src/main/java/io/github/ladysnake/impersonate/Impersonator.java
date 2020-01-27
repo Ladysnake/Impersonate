@@ -21,6 +21,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
 import nerdhub.cardinal.components.api.component.Component;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,12 +42,37 @@ public interface Impersonator extends Component {
      *
      * @param profile the {@code GameProfile} of the player to impersonate
      */
-    void impersonate(@NotNull GameProfile profile);
+    default void impersonate(@NotNull GameProfile profile) {
+        impersonate(null, profile);
+    }
+
+    /**
+     * Start impersonating a player designated by {@code profile}.
+     *
+     * <p> {@code profile} <em>may or may not</em> designate a player that is connected on the same server
+     * as the impersonating player. Impersonations of offline players are valid.
+     *
+     * <p> If the player is currently impersonating {@code profile} (ie. {@code profile.equals(getImpersonatedProfile())}),
+     * this method does nothing. If the player is impersonating someone else, this method will first
+     * {@linkplain #stopImpersonation() stop the current impersonation}.
+     *
+     * @param profile the {@code GameProfile} of the player to impersonate
+     * @param key
+     */
+    void impersonate(@Nullable Identifier key, @NotNull GameProfile profile);
 
     /**
      * Stops an ongoing impersonation.
      */
-    void stopImpersonation();
+    default void stopImpersonation() {
+        stopImpersonation(null);
+    }
+
+    /**
+     * Stops an ongoing impersonation.
+     * @param key
+     */
+    void stopImpersonation(Identifier key);
 
     /**
      * Returns {@code true} if this player is currently impersonating another player.

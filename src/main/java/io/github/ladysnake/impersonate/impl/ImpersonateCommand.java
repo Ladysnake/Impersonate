@@ -50,7 +50,7 @@ public final class ImpersonateCommand {
         for (ServerPlayerEntity player : players) {
             Impersonator impersonator = Impersonator.get(player);
             if (impersonator.isImpersonating()) {
-                com.mojang.authlib.GameProfile impersonated = Objects.requireNonNull(impersonator.getImpersonatedProfile());
+                GameProfile impersonated = Objects.requireNonNull(impersonator.getImpersonatedProfile());
                 impersonator.stopImpersonations();
                 sendImpersonationFeedback(source, player, impersonated, "clear");
                 ++count;
@@ -59,7 +59,7 @@ public final class ImpersonateCommand {
         return count;
     }
 
-    private static void sendImpersonationFeedback(ServerCommandSource source, ServerPlayerEntity player, com.mojang.authlib.GameProfile impersonated, String message) {
+    private static void sendImpersonationFeedback(ServerCommandSource source, ServerPlayerEntity player, GameProfile impersonated, String message) {
         String name = impersonated.getName();
         if (source.getEntity() == player) {
             source.sendFeedback(new TranslatableText("impersonate:commands.disguise." + message + ".success.self", name), true);

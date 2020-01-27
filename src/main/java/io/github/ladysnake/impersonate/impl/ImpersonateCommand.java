@@ -9,6 +9,7 @@ import net.minecraft.command.arguments.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +20,8 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class ImpersonateCommand {
+
+    public static final Identifier DEFAULT_IMPERSONATION_KEY = new Identifier("impersonate:command");
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("impersonate")
@@ -48,7 +51,7 @@ public final class ImpersonateCommand {
             Impersonator impersonator = Impersonator.get(player);
             if (impersonator.isImpersonating()) {
                 com.mojang.authlib.GameProfile impersonated = Objects.requireNonNull(impersonator.getImpersonatedProfile());
-                impersonator.stopImpersonation();
+                impersonator.stopImpersonations();
                 sendImpersonationFeedback(source, player, impersonated, "clear");
                 ++count;
             }
@@ -75,7 +78,7 @@ public final class ImpersonateCommand {
         int count = 0;
         stopImpersonation(source, players);
         for (ServerPlayerEntity player : players) {
-            Impersonator.get(player).impersonate(disguise);
+            Impersonator.get(player).impersonate(DEFAULT_IMPERSONATION_KEY, disguise);
             sendImpersonationFeedback(source, player, disguise, "start");
             ++count;
         }

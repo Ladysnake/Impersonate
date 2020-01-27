@@ -37,42 +37,26 @@ public interface Impersonator extends Component {
      * as the impersonating player. Impersonations of offline players are valid.
      *
      * <p> If the player is currently impersonating {@code profile} (ie. {@code profile.equals(getImpersonatedProfile())}),
-     * this method does nothing. If the player is impersonating someone else, this method will first
-     * {@linkplain #stopImpersonation() stop the current impersonation}.
+     * this method does nothing. If the player is impersonating someone else, this method will pause the current impersonation.
      *
      * @param profile the {@code GameProfile} of the player to impersonate
+     * @param key     an identifying key for the source of the impersonation
+     * @see #stopImpersonation(Identifier)
      */
-    default void impersonate(@NotNull GameProfile profile) {
-        impersonate(null, profile);
-    }
+    void impersonate(@NotNull Identifier key, @NotNull GameProfile profile);
 
     /**
-     * Start impersonating a player designated by {@code profile}.
-     *
-     * <p> {@code profile} <em>may or may not</em> designate a player that is connected on the same server
-     * as the impersonating player. Impersonations of offline players are valid.
-     *
-     * <p> If the player is currently impersonating {@code profile} (ie. {@code profile.equals(getImpersonatedProfile())}),
-     * this method does nothing. If the player is impersonating someone else, this method will first
-     * {@linkplain #stopImpersonation() stop the current impersonation}.
-     *
-     * @param profile the {@code GameProfile} of the player to impersonate
-     * @param key
+     * Stops all ongoing impersonations.
      */
-    void impersonate(@Nullable Identifier key, @NotNull GameProfile profile);
+    void stopImpersonations();
 
     /**
      * Stops an ongoing impersonation.
+     *
+     * @param key the key identifying the source of the impersonation
+     * @see #impersonate(Identifier, GameProfile)
      */
-    default void stopImpersonation() {
-        stopImpersonation(null);
-    }
-
-    /**
-     * Stops an ongoing impersonation.
-     * @param key
-     */
-    void stopImpersonation(Identifier key);
+    void stopImpersonation(@NotNull Identifier key);
 
     /**
      * Returns {@code true} if this player is currently impersonating another player.

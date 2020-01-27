@@ -22,9 +22,11 @@ import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.util.sync.EntitySyncedComponent;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.network.packet.PlayerListS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -33,12 +35,15 @@ import net.minecraft.util.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     @NotNull
     private PlayerEntity player;
-    private Map<Identifier, GameProfile> stackedImpersonations = new LinkedHashMap<>();
+    private Map<@NotNull Identifier, @NotNull GameProfile> stackedImpersonations = new LinkedHashMap<>();
     @Nullable
     private GameProfile impersonatedProfile;
     @Nullable
@@ -62,37 +67,42 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     }
 
     @Override
-    public void impersonate(@Nullable Identifier key, @NotNull GameProfile profile) {
-        if (this.getImpersonatedProfile() != profile) {
-            this.stopImpersonation();
-            if (key != null) {
-                this.stackedImpersonations.put(key, profile);
-            }
-            this.setImpersonatedProfile(profile);
-        }
+    public void impersonate(@NotNull Identifier key, @NotNull GameProfile profile) {
+        this.stackedImpersonations.put(key, profile);
+        this.setImpersonatedProfile(profile);
     }
 
     @Override
-    public void stopImpersonation(@Nullable Identifier key) {
+    public void stopImpersonations() {
+        this.stackedImpersonations.keySet().forEach(this::stopImpersonation);
+    }
+
+    @Override
+    public void stopImpersonation(@NotNull Identifier key) {
         if (this.isImpersonating()) {
             this.stackedImpersonations.remove(key);
-            this.setImpersonatedProfile(getLastImpersonation());
+            resetImpersonation();
         }
     }
 
-    private GameProfile getLastImpersonation() {
+    private void resetImpersonation() {
+        this.setImpersonatedProfile(getActiveImpersonation());
+    }
+
+    private GameProfile getActiveImpersonation() {
         GameProfile active = null;
-        Iterator<GameProfile> it = this.stackedImpersonations.values().iterator();
-        while (it.hasNext()) active = it.next();
+        for (GameProfile gameProfile : this.stackedImpersonations.values()) active = gameProfile;
         return active;
     }
 
     private void setImpersonatedProfile(@Nullable GameProfile profile) {
-        updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
-        this.impersonatedProfile = profile;
-        this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
-        updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
-        this.sync();
+        if (this.getImpersonatedProfile() != profile) {
+            updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
+            this.impersonatedProfile = profile;
+            this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
+            updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
+            this.sync();
+        }
     }
 
     private void updatePlayerLists(PlayerListS2CPacket.Action action) {
@@ -172,29 +182,39 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         if ((flags & NAME_PRESENT) != 0) {
             name = buf.readString();
         }
-        if (id != null || name != null) {
-            this.impersonate(new GameProfile(id, name));
-        } else {
-            this.stopImpersonation();
-        }
+        this.setImpersonatedProfile((id == null && name == null) ? null : new GameProfile(id, name));
         this.fakeCape = buf.readBoolean();
     }
 
     @Override
     public void fromTag(@NotNull CompoundTag tag) {
-        GameProfile profile = NbtHelper.toGameProfile(tag);
-        if (profile != null) {
-            this.impersonate(profile);
-        } else {
-            this.stopImpersonation();
+        if (tag.contains("impersonations", NbtType.LIST)) {
+            this.stopImpersonations();
+            ListTag impersonations = tag.getList("impersonations", NbtType.COMPOUND);
+            for (int i = 0; i < impersonations.size(); i++) {
+                CompoundTag nbtEntry = impersonations.getCompound(i);
+                Identifier key = Identifier.tryParse(nbtEntry.getString("impersonation_key"));
+                GameProfile profile = NbtHelper.toGameProfile(nbtEntry);
+                if (key != null && profile != null) {
+                    this.stackedImpersonations.put(key, profile);
+                }
+            }
+            this.resetImpersonation();
         }
     }
 
     @NotNull
     @Override
     public CompoundTag toTag(@NotNull CompoundTag tag) {
-        if (this.impersonatedProfile != null) {
-            NbtHelper.fromGameProfile(tag, this.impersonatedProfile);
+        if (this.isImpersonating()) {
+            ListTag profiles = new ListTag();
+            for (Map.Entry<Identifier, GameProfile> entry : this.stackedImpersonations.entrySet()) {
+                CompoundTag nbtEntry = new CompoundTag();
+                nbtEntry.putString("impersonation_key", entry.getKey().toString());
+                NbtHelper.fromGameProfile(tag, entry.getValue());
+                profiles.add(nbtEntry);
+            }
+            tag.put("impersonations", profiles);
         }
         return tag;
     }

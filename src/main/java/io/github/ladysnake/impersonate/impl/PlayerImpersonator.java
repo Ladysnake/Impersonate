@@ -74,7 +74,8 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
 
     @Override
     public void stopImpersonations() {
-        this.stackedImpersonations.keySet().forEach(this::stopImpersonation);
+        this.stackedImpersonations.clear();
+        this.resetImpersonation();
     }
 
     @Override

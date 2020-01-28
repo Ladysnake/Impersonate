@@ -42,8 +42,8 @@ You can add the library by inserting the following in your `build.gradle` :
 ```gradle
 repositories {
 	maven { 
-        name = "Jitpack"
-        url = 'https://jitpack.io' }
+        name = "Ladysnake Libs"
+        url = 'https://dl.bintray.com/ladysnake/libs' }
     }
     maven {
         name = "NerdHubMC"
@@ -54,6 +54,9 @@ repositories {
 dependencies {
     modImplementation "io.github.ladysnake:Impersonate:${impersonate_version}"
     include "io.github.ladysnake:Impersonate:${impersonate_version}"
+    // Impersonate dependencies
+    include "com.github.NerdHubMC.Cardinal-Components-API:cardinal-components-base:${cca_version}"
+    include "com.github.NerdHubMC.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
 }
 ```
 

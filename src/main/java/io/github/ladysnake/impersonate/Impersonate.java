@@ -29,6 +29,12 @@ import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
+/**
+ * Main entrypoint for Impersonate
+ *
+ * @see Impersonator
+ * @see PlayerSkins
+ */
 public final class Impersonate implements ModInitializer {
     public static final ComponentType<Impersonator> IMPERSONATION = ComponentRegistry.INSTANCE.registerIfAbsent(
         new Identifier("impersonate", "impersonation"),

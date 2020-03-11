@@ -36,8 +36,8 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
     @Inject(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V"))
     private void resolveFakeTextsInPackets(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> genericFutureListener, CallbackInfo ci) {
-        if (packet instanceof ChatMessageS2CPacketAccessor) {
-            ChatMessageS2CPacketAccessor accessiblePacket = (ChatMessageS2CPacketAccessor) packet;
+        if (packet instanceof GameMessageS2CPacketAccessor) {
+            GameMessageS2CPacketAccessor accessiblePacket = (GameMessageS2CPacketAccessor) packet;
             accessiblePacket.setMessage(((RecipientAwareText) accessiblePacket.getMessage()).impersonateResolveAll(this.player));
         }
     }

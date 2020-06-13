@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements CommandOutput {
-    @ModifyVariable(method = "sendMessage", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "sendSystemMessage", at = @At("HEAD"), argsOnly = true)
     private Text revealImpersonatorsInMessages(Text message) {
         return ((RecipientAwareText) message).impersonateResolveAll(this);
     }

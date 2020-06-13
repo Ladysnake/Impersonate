@@ -71,7 +71,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         }
     }
 
-    @ModifyArg(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team;modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/Text;"))
+    @ModifyArg(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team;modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"))
     private Text fakeDisplayName(Text original) {
         // No need to fake on clients, as #fakeGameProfile already covers it
         if (!world.isClient && impersonate_self.isImpersonating()) {
@@ -80,7 +80,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         return original;
     }
 
-    @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/LiteralText;append(Lnet/minecraft/text/Text;)Lnet/minecraft/text/Text;", ordinal = 0))
+    @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/LiteralText;append(Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;", ordinal = 0))
     private Text fakeNameAndUuid(Text originalName) {
         if (impersonate_self.isImpersonating()) {
             return ImpersonateText.get((PlayerEntity) (Object) this);
@@ -88,7 +88,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         return originalName;
     }
 
-    @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/Text;append(Ljava/lang/String;)Lnet/minecraft/text/Text;", ordinal = 1))
+    @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/MutableText;append(Ljava/lang/String;)Lnet/minecraft/text/MutableText;", ordinal = 1))
     private String fakeNameAndUuid(String originalUuid) {
         if (impersonate_self.isImpersonating()) {
             return impersonate_getActualGameProfile().getId().toString();

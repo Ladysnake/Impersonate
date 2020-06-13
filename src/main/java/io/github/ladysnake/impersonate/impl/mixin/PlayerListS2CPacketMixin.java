@@ -28,8 +28,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PlayerListS2CPacket.class)
 public abstract class PlayerListS2CPacketMixin {
-    @SuppressWarnings("InvalidMemberReference") // bad dev plugin
-    @Redirect(method = {"<init>(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket$Action;[Lnet/minecraft/server/network/ServerPlayerEntity;)V", "<init>(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket$Action;Ljava/lang/Iterable;)V"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getGameProfile()Lcom/mojang/authlib/GameProfile;"))
+    @Redirect(
+        method = {
+            "<init>(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket$Action;[Lnet/minecraft/server/network/ServerPlayerEntity;)V",
+            "<init>(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket$Action;Ljava/lang/Iterable;)V"
+        },
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getGameProfile()Lcom/mojang/authlib/GameProfile;")
+    )
     private GameProfile preventEasyReveal(ServerPlayerEntity serverPlayerEntity) {
         GameProfile impersonatedProfile = Impersonator.get(serverPlayerEntity).getImpersonatedProfile();
         if (impersonatedProfile != null && !ImpersonateText.shouldBeRevealedBy(serverPlayerEntity)) {

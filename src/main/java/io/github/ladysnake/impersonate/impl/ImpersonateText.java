@@ -32,11 +32,11 @@ public class ImpersonateText extends LiteralText implements RecipientAwareText {
     public static Text get(PlayerEntity player) {
         Impersonator impersonator = Impersonator.get(player);
         String fakeName = impersonator.getEditedProfile().getName();
-        String trueText = String.format("%s (%s)", fakeName, player.getGameProfile().getName());
+        String trueText = String.format("%s(%s)", fakeName, player.getGameProfile().getName());
         return new ImpersonateText(trueText, fakeName, false);
     }
 
-    public ImpersonateText(String trueText, String fakedText, boolean revealed) {
+    private ImpersonateText(String trueText, String fakedText, boolean revealed) {
         super(fakedText);
         this.trueText = trueText;
         this.fakedText = fakedText;

@@ -5,14 +5,13 @@
   "minVersion": "0.7.11-SNAPSHOT",
   "mixins": [
     "GameMessageS2CPacketAccessor",
-    "GameRulesAccessor",
-    "GameRulesMixin",
     "MinecraftServerMixin",
+    "MutableTextMixin",
     "PlayerEntityMixin",
     "PlayerListS2CPacketMixin",
-    "RuleTypeAccessor",
     "ServerPlayNetworkHandlerMixin",
-    "TextMixin"
+    "TextMixin",
+    "TranslatableTextMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -19,14 +19,25 @@ package io.github.ladysnake.impersonate.impl.mixin;
 
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import net.minecraft.server.command.CommandOutput;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.List;
+
 @Mixin(Text.class)
 public interface TextMixin extends RecipientAwareText {
+
     @Shadow
-    Text deepCopy();
+    MutableText copy();
+
+    @Shadow
+    List<Text> getSiblings();
+
+    @Shadow
+    Style getStyle();
 
     @Override
     default void impersonateResolve(CommandOutput recipient) {
@@ -35,8 +46,12 @@ public interface TextMixin extends RecipientAwareText {
 
     @Override
     default Text impersonateResolveAll(CommandOutput recipient) {
-        Text copy = this.deepCopy();
-        copy.stream().forEach(t -> ((RecipientAwareText) t).impersonateResolve(recipient));
-        return copy;
+        MutableText text = this.copy();
+        ((RecipientAwareText)text).impersonateResolve(recipient);
+        for (Text sibling : this.getSiblings()) {
+            text.append(((RecipientAwareText) sibling).impersonateResolveAll(recipient));
+        }
+        text.setStyle(this.getStyle());
+        return text;
     }
 }

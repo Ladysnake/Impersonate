@@ -19,7 +19,6 @@ package io.github.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
 import dev.onyxstudios.cca.api.v3.util.PlayerComponent;
-import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.util.sync.EntitySyncedComponent;
@@ -64,7 +63,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     @NotNull
     @Override
     public ComponentType<?> getComponentType() {
-        return Impersonate.IMPERSONATION;
+        return Impersonator.COMPONENT_TYPE;
     }
 
     @Override

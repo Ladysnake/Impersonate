@@ -18,7 +18,6 @@
 package io.github.ladysnake.impersonate.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.ImpersonateText;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
@@ -30,7 +29,6 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -42,16 +40,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Final
     private GameProfile gameProfile;
 
-    @Unique
-    protected Impersonator impersonate_self = Impersonate.IMPERSONATION.get(this);    // cache the component for faster access
-
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
-    }
-
-    @Override
-    public Impersonator impersonate_getAsImpersonator() {
-        return impersonate_self;
     }
 
     @Override
@@ -65,8 +55,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Inject(method = "getGameProfile", at = @At("HEAD"), cancellable = true)
     private void fakeGameProfile(CallbackInfoReturnable<GameProfile> cir) {
         if (this.world.isClient) {
-            if (impersonate_self.isImpersonating()) {
-                cir.setReturnValue(impersonate_self.getEditedProfile());
+            Impersonator self = Impersonator.COMPONENT_TYPE.get(this);
+            if (self.isImpersonating()) {
+                cir.setReturnValue(self.getEditedProfile());
             }
         }
     }
@@ -74,7 +65,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @ModifyArg(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team;modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"))
     private Text fakeDisplayName(Text original) {
         // No need to fake on clients, as #fakeGameProfile already covers it
-        if (!world.isClient && impersonate_self.isImpersonating()) {
+        if (!world.isClient && Impersonator.COMPONENT_TYPE.get(this).isImpersonating()) {
             return ImpersonateText.get((PlayerEntity) (Object) this);
         }
         return original;
@@ -82,7 +73,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/LiteralText;append(Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;", ordinal = 0))
     private Text fakeNameAndUuid(Text originalName) {
-        if (impersonate_self.isImpersonating()) {
+        if (Impersonator.COMPONENT_TYPE.get(this).isImpersonating()) {
             return ImpersonateText.get((PlayerEntity) (Object) this);
         }
         return originalName;
@@ -90,7 +81,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/MutableText;append(Ljava/lang/String;)Lnet/minecraft/text/MutableText;", ordinal = 1))
     private String fakeNameAndUuid(String originalUuid) {
-        if (impersonate_self.isImpersonating()) {
+        if (Impersonator.COMPONENT_TYPE.get(this).isImpersonating()) {
             return impersonate_getActualGameProfile().getId().toString();
         }
         return originalUuid;

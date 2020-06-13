@@ -18,7 +18,8 @@
 package io.github.ladysnake.impersonate;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
+import nerdhub.cardinal.components.api.ComponentRegistry;
+import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.component.Component;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
@@ -26,8 +27,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface Impersonator extends Component {
+    ComponentType<Impersonator> COMPONENT_TYPE = ComponentRegistry.INSTANCE.registerIfAbsent(
+        new Identifier("impersonate", "impersonation"),
+        Impersonator.class
+    );
+
     static Impersonator get(@NotNull PlayerEntity player) {
-        return ((PlayerEntityExtensions) player).impersonate_getAsImpersonator();
+        return COMPONENT_TYPE.get(player);
     }
 
     /**

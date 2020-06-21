@@ -18,17 +18,21 @@
 package io.github.ladysnake.impersonate.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
+import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.ImpersonateText;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -40,6 +44,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Final
     private GameProfile gameProfile;
 
+    @Shadow
+    @Final
+    protected static TrackedData<Byte> PLAYER_MODEL_PARTS;
+
+    @Unique
+    private boolean wantsCapeDisplay;
+
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
     }
@@ -49,31 +60,37 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         return this.gameProfile;
     }
 
-    /**
-     * Fakes the player's game profile on clients
-     */
-    @Inject(method = "getGameProfile", at = @At("HEAD"), cancellable = true)
-    private void fakeGameProfile(CallbackInfoReturnable<GameProfile> cir) {
-        if (this.world.isClient) {
-            Impersonator self = Impersonator.COMPONENT_TYPE.get(this);
-            if (self.isImpersonating()) {
-                cir.setReturnValue(self.getEditedProfile());
-            }
+    @Override
+    public void impersonate_resetCape() {
+        if (this.wantsCapeDisplay) {
+            DataTracker dataTracker = this.getDataTracker();
+            byte modelMask = dataTracker.get(PLAYER_MODEL_PARTS);
+            byte newModelMask = (byte) (modelMask | 1);
+            dataTracker.set(PLAYER_MODEL_PARTS, newModelMask);
         }
     }
 
-    @ModifyArg(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team;modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"))
-    private Text fakeDisplayName(Text original) {
-        // No need to fake on clients, as #fakeGameProfile already covers it
-        if (!world.isClient && Impersonator.COMPONENT_TYPE.get(this).isImpersonating()) {
-            return ImpersonateText.get((PlayerEntity) (Object) this);
+    @Override
+    public void impersonate_disableCape() {
+        DataTracker dataTracker = this.getDataTracker();
+        byte modelMask = dataTracker.get(PLAYER_MODEL_PARTS);
+        this.wantsCapeDisplay = (modelMask & 1) != 0;
+        byte newModelMask = (byte) (modelMask & ~1);
+        dataTracker.set(PLAYER_MODEL_PARTS, newModelMask);
+    }
+
+    @Inject(method = "getName", at = @At("RETURN"), cancellable = true)
+    private void fakeName(CallbackInfoReturnable<Text> cir) {
+        PlayerEntity self = ((PlayerEntity) (Object) this);
+        if (Impersonator.get(self).isImpersonating()) {
+            // if the client is aware that there is an impersonation, they should display it
+            cir.setReturnValue(ImpersonateText.get(self, world.isClient));
         }
-        return original;
     }
 
     @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/LiteralText;append(Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;", ordinal = 0))
     private Text fakeNameAndUuid(Text originalName) {
-        if (Impersonator.COMPONENT_TYPE.get(this).isImpersonating()) {
+        if (Impersonate.IMPERSONATION.get(this).isImpersonating()) {
             return ImpersonateText.get((PlayerEntity) (Object) this);
         }
         return originalName;
@@ -81,8 +98,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/MutableText;append(Ljava/lang/String;)Lnet/minecraft/text/MutableText;", ordinal = 1))
     private String fakeNameAndUuid(String originalUuid) {
-        if (Impersonator.COMPONENT_TYPE.get(this).isImpersonating()) {
-            return impersonate_getActualGameProfile().getId().toString();
+        GameProfile impersonatedProfile = Impersonate.IMPERSONATION.get(this).getImpersonatedProfile();
+        if (impersonatedProfile != null) {
+            return impersonatedProfile.getId().toString();
         }
         return originalUuid;
     }

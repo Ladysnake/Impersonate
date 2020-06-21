@@ -18,25 +18,30 @@
 package io.github.ladysnake.impersonate;
 
 import dev.onyxstudios.cca.api.v3.component.entity.EntityComponentFactoryRegistry;
-import dev.onyxstudios.cca.api.v3.component.entity.StaticEntityComponentInitializer;
+import dev.onyxstudios.cca.api.v3.component.entity.EntityComponentInitializer;
 import io.github.ladysnake.impersonate.impl.ImpersonateCommand;
 import io.github.ladysnake.impersonate.impl.ImpersonateGamerules;
 import io.github.ladysnake.impersonate.impl.PlayerImpersonator;
+import nerdhub.cardinal.components.api.ComponentRegistry;
+import nerdhub.cardinal.components.api.ComponentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
-
-import java.util.Collection;
-import java.util.Collections;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Main entrypoint for Impersonate
  *
  * @see Impersonator
- * @see PlayerSkins
  */
-public final class Impersonate implements ModInitializer, StaticEntityComponentInitializer {
+public final class Impersonate implements ModInitializer, EntityComponentInitializer {
+    public static final Logger LOGGER = LogManager.getLogger("Impersonate");
+    public static final ComponentType<Impersonator> IMPERSONATION = ComponentRegistry.INSTANCE.registerStatic(
+        new Identifier("impersonate", "impersonation"),
+        Impersonator.class
+    );
 
     @Override
     public void onInitialize() {
@@ -45,12 +50,7 @@ public final class Impersonate implements ModInitializer, StaticEntityComponentI
     }
 
     @Override
-    public Collection<Identifier> getSupportedComponentTypes() {
-        return Collections.singletonList(new Identifier("impersonate", "impersonation"));
-    }
-
-    @Override
     public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-        registry.register(Impersonator.COMPONENT_TYPE, PlayerEntity.class, PlayerImpersonator::new);
+        registry.register(IMPERSONATION, PlayerEntity.class, PlayerImpersonator::new);
     }
 }

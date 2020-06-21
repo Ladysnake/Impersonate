@@ -4,6 +4,9 @@
 
 A library handling player impersonation. Can also be used as a standalone mod, through the `/impersonate` command.
 
+Most features work serverside, so you can use this mod on a vanilla-compatible server. Clientside installation is however
+still recommended for a smoother experience.
+
 ## Overview
 
 Impersonate allows players to take on the name and appearance of other players. When impersonating someone, a player
@@ -45,18 +48,11 @@ repositories {
         name = "Ladysnake Libs"
         url = 'https://dl.bintray.com/ladysnake/libs' }
     }
-    maven {
-        name = "NerdHubMC"
-        url = "https://maven.abusedmaster.xyz"
-    }
 }
 
 dependencies {
     modImplementation "io.github.ladysnake:Impersonate:${impersonate_version}"
     include "io.github.ladysnake:Impersonate:${impersonate_version}"
-    // Impersonate dependencies
-    include "com.github.NerdHubMC.Cardinal-Components-API:cardinal-components-base:${cca_version}"
-    include "com.github.NerdHubMC.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
 }
 ```
 

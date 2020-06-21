@@ -19,6 +19,7 @@ package io.github.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
 import dev.onyxstudios.cca.api.v3.util.PlayerComponent;
+import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.util.sync.EntitySyncedComponent;
@@ -41,6 +42,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, PlayerComponent<PlayerImpersonator> {
+
     @NotNull
     private final PlayerEntity player;
     private final Map<@NotNull Identifier, @NotNull GameProfile> stackedImpersonations = new LinkedHashMap<>();
@@ -48,7 +50,6 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     private GameProfile impersonatedProfile;
     @Nullable
     private GameProfile editedProfile;
-    private boolean fakeCape;
 
     public PlayerImpersonator(@NotNull PlayerEntity player) {
         this.player = player;
@@ -63,7 +64,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     @NotNull
     @Override
     public ComponentType<?> getComponentType() {
-        return Impersonator.COMPONENT_TYPE;
+        return Impersonate.IMPERSONATION;
     }
 
     @Override
@@ -103,6 +104,9 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
             updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
             this.impersonatedProfile = profile;
             this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
+            if (this.player instanceof ServerPlayerEntity) {
+                ServerPlayerSkins.setSkin(((ServerPlayerEntity) player), this.getEditedProfile().getName());
+            }
             updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
             this.sync();
         }
@@ -117,6 +121,11 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
         }
     }
 
+    /**
+     * Return {@code true} if this player is the only one with the impersonated identity.
+     *
+     * <p>This method will return false if the impersonated player exists on the server, or if someone else impersonates the same person
+     */
     private boolean isAloneOnServer(PlayerManager playerManager) {
         for (ServerPlayerEntity otherPlayer : playerManager.getPlayerList()) {
             if (this.isSamePersonAs(otherPlayer)) {
@@ -152,13 +161,8 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     }
 
     @Override
-    public boolean shouldFakeCape() {
-        return this.fakeCape;
-    }
-
-    @Override
-    public void copyForRespawn(PlayerImpersonator original, boolean lossless, boolean keepInventory) {
-        this.copyFrom(original);
+    public boolean shouldCopyForRespawn(boolean lossless, boolean keepInventory) {
+        return true;
     }
 
     @Override
@@ -172,6 +176,13 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     private static final int NAME_PRESENT = 0b10;
 
     @Override
+    public void syncWith(ServerPlayerEntity player) {
+        if (player == this.player || player.server.getPlayerManager().isOperator(player.getGameProfile())) {
+            EntitySyncedComponent.super.syncWith(player);
+        }
+    }
+
+    @Override
     public void writeToPacket(PacketByteBuf buf) {
         GameProfile profile = this.getImpersonatedProfile();
         UUID id = profile == null ? null : profile.getId();
@@ -183,7 +194,6 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
         if (name != null) {
             buf.writeString(name);
         }
-        buf.writeBoolean(this.player.world.getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES));
     }
 
     @Override
@@ -198,7 +208,6 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
             name = buf.readString();
         }
         this.setImpersonatedProfile((id == null && name == null) ? null : new GameProfile(id, name));
-        this.fakeCape = buf.readBoolean();
     }
 
     @Override

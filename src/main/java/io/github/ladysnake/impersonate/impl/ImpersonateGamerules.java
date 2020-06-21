@@ -19,7 +19,6 @@ package io.github.ladysnake.impersonate.impl;
 
 import io.github.fablabsmc.fablabs.api.gamerule.v1.GameRuleRegistry;
 import io.github.fablabsmc.fablabs.api.gamerule.v1.RuleFactory;
-import io.github.ladysnake.impersonate.Impersonator;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameRules;
 
@@ -27,12 +26,16 @@ public final class ImpersonateGamerules {
     public static final GameRules.Key<GameRules.BooleanRule> FAKE_CAPES =
         register("fakeCapes", RuleFactory.createBooleanRule(false, (server, rule) -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                ((PlayerImpersonator) Impersonator.get(player)).sync();
+                if (rule.get()) {
+                    ((PlayerEntityExtensions)player).impersonate_resetCape();
+                } else {
+                    ((PlayerEntityExtensions) player).impersonate_disableCape();
+                }
             }
         }));
 
     public static final GameRules.Key<GameRules.BooleanRule> OP_REVEAL_IMPERSONATIONS =
-        register("opRevealImpersonations", RuleFactory.createBooleanRule(true, (server, rule) -> {}));
+        register("opRevealImpersonations", RuleFactory.createBooleanRule(true));
 
     private static <T extends GameRules.Rule<T>> GameRules.Key<T> register(String name, GameRules.Type<T> type) {
         return GameRuleRegistry.register("impersonate:" + name, GameRules.Category.PLAYER, type);

@@ -4,13 +4,17 @@
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7.11-SNAPSHOT",
   "mixins": [
+    "EntityTrackerAccessor",
     "GameMessageS2CPacketAccessor",
     "MinecraftServerMixin",
     "MutableTextMixin",
     "PlayerEntityMixin",
-    "PlayerListS2CPacketMixin",
+    "PlayerListS2CPacketAccessor",
+    "PlayerListS2CPacketEntryAccessor",
+    "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "TextMixin",
+    "ThreadedAnvilChunkStorageAccessor",
     "TranslatableTextMixin"
   ],
   "injectors": {

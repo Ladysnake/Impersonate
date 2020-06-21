@@ -48,6 +48,7 @@ dependencies {
     modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
     include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"
     include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
+    // todo publish a thin jar
     modImplementation "io.github.fablabsmc:GameRules:${gamerules_version}"
     include "io.github.fablabsmc:GameRules:${gamerules_version}"
 

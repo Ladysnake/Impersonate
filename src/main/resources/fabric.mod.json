@@ -9,6 +9,9 @@
   "authors": [
     "Pyrofab"
   ],
+  "credits": [
+
+  ],
   "contact": {
     "sources": "https://github.com/Ladysnake/Impersonate",
     "issues": "https://github.com/Ladysnake/Impersonate/issues",
@@ -19,7 +22,7 @@
     "main": [
       "io.github.ladysnake.impersonate.Impersonate"
     ],
-    "cardinal-components:static-init": [
+    "cardinal-components-entity": [
       "io.github.ladysnake.impersonate.Impersonate"
     ]
   },
@@ -27,18 +30,16 @@
     {
       "environment": "*",
       "config": "mixins.impersonate.common.json"
-    },
-    {
-      "environment": "client",
-      "config": "mixins.impersonate.client.json"
     }
   ],
   "depends": {
-    "minecraft": ">=1.15",
+    "minecraft": ">=1.16-",
     "fabric": "*",
-    "cardinal-components-entity": "^2.4.0"
+    "cardinal-components-entity": "^2.4.0-"
   },
   "custom": {
-    "modmenu:api": true
+    "cardinal-components": [
+      "impersonate:impersonation"
+    ]
   }
 }

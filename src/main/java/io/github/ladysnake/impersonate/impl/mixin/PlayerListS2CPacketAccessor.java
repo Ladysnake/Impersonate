@@ -15,12 +15,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.ladysnake.impersonate.impl;
+package io.github.ladysnake.impersonate.impl.mixin;
 
-import com.mojang.authlib.GameProfile;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public interface PlayerEntityExtensions {
-    GameProfile impersonate_getActualGameProfile();
-    void impersonate_resetCape();
-    void impersonate_disableCape();
+import java.util.List;
+
+@Mixin(PlayerListS2CPacket.class)
+public interface PlayerListS2CPacketAccessor {
+    @Accessor
+    List<PlayerListS2CPacket.Entry> getEntries();
 }

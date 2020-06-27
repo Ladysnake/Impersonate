@@ -41,13 +41,10 @@ You can add the library by inserting the following in your `build.gradle` :
 
 ```gradle
 repositories {
+    jcenter()
 	maven { 
         name = "Ladysnake Libs"
         url = 'https://dl.bintray.com/ladysnake/libs' }
-    }
-    maven {
-        name = "NerdHubMC"
-        url = "https://maven.abusedmaster.xyz"
     }
 }
 
@@ -55,8 +52,8 @@ dependencies {
     modImplementation "io.github.ladysnake:Impersonate:${impersonate_version}"
     include "io.github.ladysnake:Impersonate:${impersonate_version}"
     // Impersonate dependencies
-    include "com.github.NerdHubMC.Cardinal-Components-API:cardinal-components-base:${cca_version}"
-    include "com.github.NerdHubMC.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
+    include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"
+    include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
 }
 ```
 
@@ -65,9 +62,12 @@ You can then add the library version to your `gradle.properties`file:
 ```properties
 # Impersonate
 impersonate_version = 1.x.y
+# Cardinal Components
+cca_version = 2.x.y
 ```
 
-You can find the current version of Impersonate in the [releases](https://github.com/Ladysnake/Impersonate/releases) tab of the repository on Github.
+You can find the current version of Impersonate in the [releases](https://github.com/Ladysnake/Impersonate/releases) tab of the repository on Github,
+and the latest CCA version in the [appropriate repository](https://github.com/OnyxStudios/Cardinal-Components-API/releases). 
 
 ## Using Impersonate
 

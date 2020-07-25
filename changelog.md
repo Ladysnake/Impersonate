@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Version 2.0.1
+------------------------------------------------------
+Changes
+- Replaced use of Gamerules API proposal with actual merged Fabric API
+- Updated Cardinal Components dependency
+
+------------------------------------------------------
 Version 2.0.0
 ------------------------------------------------------
 - Updated to 1.16

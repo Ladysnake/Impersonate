@@ -51,6 +51,6 @@ public final class Impersonate implements ModInitializer, EntityComponentInitial
 
     @Override
     public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-        registry.register(IMPERSONATION, PlayerEntity.class, PlayerImpersonator::new);
+        registry.registerFor(PlayerEntity.class, IMPERSONATION, PlayerImpersonator::new);
     }
 }

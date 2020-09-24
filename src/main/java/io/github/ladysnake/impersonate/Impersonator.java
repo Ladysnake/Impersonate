@@ -18,16 +18,16 @@
 package io.github.ladysnake.impersonate;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
-import nerdhub.cardinal.components.api.component.Component;
+import dev.onyxstudios.cca.api.v3.component.ComponentV3;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface Impersonator extends Component {
+public interface Impersonator extends ComponentV3 {
+
     static Impersonator get(@NotNull PlayerEntity player) {
-        return ((PlayerEntityExtensions) player).impersonate_getAsImpersonator();
+        return Impersonate.IMPERSONATION.get(player);
     }
 
     /**
@@ -93,13 +93,4 @@ public interface Impersonator extends Component {
      */
     @NotNull GameProfile getEditedProfile();
 
-    /**
-     * Returns {@code true} if the player should mimic cape and elytra textures of impersonated players.
-     *
-     * <p> Whether players are allowed to fake capes is determined by the value of the
-     * {@code impersonate:fakeCapes} gamerule.
-     *
-     * @return {@code true} if the player should fake capes and elytra textures
-     */
-    boolean shouldFakeCape();
 }

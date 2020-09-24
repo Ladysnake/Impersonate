@@ -4,6 +4,9 @@
 
 A library handling player impersonation. Can also be used as a standalone mod, through the `/impersonate` command.
 
+Most features work serverside, so you can use this mod on a vanilla-compatible server. Clientside installation is however
+still recommended for a smoother experience.
+
 ## Overview
 
 Impersonate allows players to take on the name and appearance of other players. When impersonating someone, a player

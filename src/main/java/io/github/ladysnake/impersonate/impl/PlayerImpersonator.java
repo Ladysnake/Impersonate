@@ -18,20 +18,21 @@
 package io.github.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
+import dev.onyxstudios.cca.api.v3.component.AutoSyncedComponent;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import nerdhub.cardinal.components.api.ComponentType;
-import nerdhub.cardinal.components.api.util.sync.EntitySyncedComponent;
+import nerdhub.cardinal.components.api.component.extension.CopyableComponent;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.client.network.packet.PlayerListS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,30 +41,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
+public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, CopyableComponent<PlayerImpersonator> {
+
     @NotNull
-    private PlayerEntity player;
-    private Map<@NotNull Identifier, @NotNull GameProfile> stackedImpersonations = new LinkedHashMap<>();
+    private final PlayerEntity player;
+    private final Map<@NotNull Identifier, @NotNull GameProfile> stackedImpersonations = new LinkedHashMap<>();
     @Nullable
     private GameProfile impersonatedProfile;
     @Nullable
     private GameProfile editedProfile;
-    private boolean fakeCape;
 
     public PlayerImpersonator(@NotNull PlayerEntity player) {
         this.player = player;
-    }
-
-    @NotNull
-    @Override
-    public PlayerEntity getEntity() {
-        return this.player;
-    }
-
-    @NotNull
-    @Override
-    public ComponentType<?> getComponentType() {
-        return Impersonate.IMPERSONATION;
     }
 
     @Override
@@ -103,8 +92,11 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
             updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
             this.impersonatedProfile = profile;
             this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
+            if (this.player instanceof ServerPlayerEntity) {
+                ServerPlayerSkins.setSkin(((ServerPlayerEntity) player), this.getEditedProfile().getName());
+            }
             updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
-            this.sync();
+            Impersonate.IMPERSONATION.sync(this.player);
         }
     }
 
@@ -117,6 +109,11 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         }
     }
 
+    /**
+     * Return {@code true} if this player is the only one with the impersonated identity.
+     *
+     * <p>This method will return false if the impersonated player exists on the server, or if someone else impersonates the same person
+     */
     private boolean isAloneOnServer(PlayerManager playerManager) {
         for (ServerPlayerEntity otherPlayer : playerManager.getPlayerList()) {
             if (this.isSamePersonAs(otherPlayer)) {
@@ -152,15 +149,27 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
     }
 
     @Override
-    public boolean shouldFakeCape() {
-        return this.fakeCape;
+    public @NotNull ComponentType<Impersonator> getComponentType() {
+        return (ComponentType<Impersonator>) Impersonate.IMPERSONATION;
+    }
+
+    @Override
+    public void copyFrom(PlayerImpersonator other) {
+        this.stopImpersonations();
+        this.stackedImpersonations.putAll(other.stackedImpersonations);
+        this.resetImpersonation();
     }
 
     private static final int ID_PRESENT = 0b01;
     private static final int NAME_PRESENT = 0b10;
 
     @Override
-    public void writeToPacket(PacketByteBuf buf) {
+    public boolean shouldSyncWith(ServerPlayerEntity player, int syncOp) {
+        return player == this.player || player.server.getPlayerManager().isOperator(player.getGameProfile());
+    }
+
+    @Override
+    public void writeToPacket(PacketByteBuf buf, ServerPlayerEntity recipient, int syncOp) {
         GameProfile profile = this.getImpersonatedProfile();
         UUID id = profile == null ? null : profile.getId();
         String name = profile == null ? null : profile.getName();
@@ -171,7 +180,6 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         if (name != null) {
             buf.writeString(name);
         }
-        buf.writeBoolean(this.player.world.getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES));
     }
 
     @Override
@@ -186,11 +194,10 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
             name = buf.readString();
         }
         this.setImpersonatedProfile((id == null && name == null) ? null : new GameProfile(id, name));
-        this.fakeCape = buf.readBoolean();
     }
 
     @Override
-    public void fromTag(@NotNull CompoundTag tag) {
+    public void readFromNbt(@NotNull CompoundTag tag) {
         if (tag.contains("impersonations", NbtType.LIST)) {
             this.stopImpersonations();
             ListTag impersonations = tag.getList("impersonations", NbtType.COMPOUND);
@@ -206,19 +213,17 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent {
         }
     }
 
-    @NotNull
     @Override
-    public CompoundTag toTag(@NotNull CompoundTag tag) {
+    public void writeToNbt(@NotNull CompoundTag tag) {
         if (this.isImpersonating()) {
             ListTag profiles = new ListTag();
             for (Map.Entry<Identifier, GameProfile> entry : this.stackedImpersonations.entrySet()) {
                 CompoundTag nbtEntry = new CompoundTag();
                 nbtEntry.putString("impersonation_key", entry.getKey().toString());
-                NbtHelper.fromGameProfile(tag, entry.getValue());
+                NbtHelper.fromGameProfile(nbtEntry, entry.getValue());
                 profiles.add(nbtEntry);
             }
             tag.put("impersonations", profiles);
         }
-        return tag;
     }
 }

@@ -15,12 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.ladysnake.impersonate.impl;
+package io.github.ladysnake.impersonate.impl.mixin;
 
-import com.mojang.authlib.GameProfile;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public interface PlayerEntityExtensions {
-    GameProfile impersonate_getActualGameProfile();
-    void impersonate_resetCape();
-    void impersonate_disableCape();
+@Mixin(ThreadedAnvilChunkStorage.class)
+public interface ThreadedAnvilChunkStorageAccessor {
+    @Accessor
+    Int2ObjectMap<EntityTrackerAccessor> getEntityTrackers();
 }

@@ -4,15 +4,19 @@
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7.11-SNAPSHOT",
   "mixins": [
-    "ChatMessageS2CPacketAccessor",
-    "GameRulesAccessor",
-    "GameRulesMixin",
+    "EntityTrackerAccessor",
+    "GameMessageS2CPacketAccessor",
+    "ListCommandMixin",
     "MinecraftServerMixin",
+    "MutableTextMixin",
     "PlayerEntityMixin",
-    "PlayerListS2CPacketMixin",
-    "RuleTypeAccessor",
+    "PlayerListS2CPacketAccessor",
+    "PlayerListS2CPacketEntryAccessor",
+    "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
-    "TextMixin"
+    "TextMixin",
+    "ThreadedAnvilChunkStorageAccessor",
+    "TranslatableTextMixin"
   ],
   "injectors": {
     "defaultRequire": 1

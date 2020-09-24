@@ -6,6 +6,7 @@
   "mixins": [
     "EntityTrackerAccessor",
     "GameMessageS2CPacketAccessor",
+    "ListCommandMixin",
     "MinecraftServerMixin",
     "MutableTextMixin",
     "PlayerEntityMixin",

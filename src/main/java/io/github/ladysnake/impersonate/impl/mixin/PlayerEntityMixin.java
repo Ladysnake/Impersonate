@@ -18,7 +18,6 @@
 package io.github.ladysnake.impersonate.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.ImpersonateText;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
@@ -35,7 +34,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
@@ -86,22 +84,5 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             // if the client is aware that there is an impersonation, they should display it
             cir.setReturnValue(ImpersonateText.get(self, world.isClient));
         }
-    }
-
-    @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/LiteralText;append(Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;", ordinal = 0))
-    private Text fakeNameAndUuid(Text originalName) {
-        if (Impersonate.IMPERSONATION.get(this).isImpersonating()) {
-            return ImpersonateText.get((PlayerEntity) (Object) this);
-        }
-        return originalName;
-    }
-
-    @ModifyArg(method = "getNameAndUuid", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/MutableText;append(Ljava/lang/String;)Lnet/minecraft/text/MutableText;", ordinal = 1))
-    private String fakeNameAndUuid(String originalUuid) {
-        GameProfile impersonatedProfile = Impersonate.IMPERSONATION.get(this).getImpersonatedProfile();
-        if (impersonatedProfile != null) {
-            return impersonatedProfile.getId().toString();
-        }
-        return originalUuid;
     }
 }

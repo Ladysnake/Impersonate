@@ -18,11 +18,11 @@
 package io.github.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
-import dev.onyxstudios.cca.api.v3.util.PlayerComponent;
+import dev.onyxstudios.cca.api.v3.component.AutoSyncedComponent;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import nerdhub.cardinal.components.api.ComponentType;
-import nerdhub.cardinal.components.api.util.sync.EntitySyncedComponent;
+import nerdhub.cardinal.components.api.component.extension.CopyableComponent;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, PlayerComponent<PlayerImpersonator> {
+public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, CopyableComponent<PlayerImpersonator> {
 
     @NotNull
     private final PlayerEntity player;
@@ -53,18 +53,6 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
 
     public PlayerImpersonator(@NotNull PlayerEntity player) {
         this.player = player;
-    }
-
-    @NotNull
-    @Override
-    public PlayerEntity getEntity() {
-        return this.player;
-    }
-
-    @NotNull
-    @Override
-    public ComponentType<?> getComponentType() {
-        return Impersonate.IMPERSONATION;
     }
 
     @Override
@@ -108,7 +96,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
                 ServerPlayerSkins.setSkin(((ServerPlayerEntity) player), this.getEditedProfile().getName());
             }
             updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
-            this.sync();
+            Impersonate.IMPERSONATION.sync(this.player);
         }
     }
 
@@ -161,8 +149,8 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     }
 
     @Override
-    public boolean shouldCopyForRespawn(boolean lossless, boolean keepInventory) {
-        return true;
+    public @NotNull ComponentType<Impersonator> getComponentType() {
+        return (ComponentType<Impersonator>) Impersonate.IMPERSONATION;
     }
 
     @Override
@@ -176,14 +164,12 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     private static final int NAME_PRESENT = 0b10;
 
     @Override
-    public void syncWith(ServerPlayerEntity player) {
-        if (player == this.player || player.server.getPlayerManager().isOperator(player.getGameProfile())) {
-            EntitySyncedComponent.super.syncWith(player);
-        }
+    public boolean shouldSyncWith(ServerPlayerEntity player, int syncOp) {
+        return player == this.player || player.server.getPlayerManager().isOperator(player.getGameProfile());
     }
 
     @Override
-    public void writeToPacket(PacketByteBuf buf) {
+    public void writeToPacket(PacketByteBuf buf, ServerPlayerEntity recipient, int syncOp) {
         GameProfile profile = this.getImpersonatedProfile();
         UUID id = profile == null ? null : profile.getId();
         String name = profile == null ? null : profile.getName();
@@ -211,7 +197,7 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
     }
 
     @Override
-    public void fromTag(@NotNull CompoundTag tag) {
+    public void readFromNbt(@NotNull CompoundTag tag) {
         if (tag.contains("impersonations", NbtType.LIST)) {
             this.stopImpersonations();
             ListTag impersonations = tag.getList("impersonations", NbtType.COMPOUND);
@@ -227,9 +213,8 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
         }
     }
 
-    @NotNull
     @Override
-    public CompoundTag toTag(@NotNull CompoundTag tag) {
+    public void writeToNbt(@NotNull CompoundTag tag) {
         if (this.isImpersonating()) {
             ListTag profiles = new ListTag();
             for (Map.Entry<Identifier, GameProfile> entry : this.stackedImpersonations.entrySet()) {
@@ -240,6 +225,5 @@ public class PlayerImpersonator implements Impersonator, EntitySyncedComponent, 
             }
             tag.put("impersonations", profiles);
         }
-        return tag;
     }
 }

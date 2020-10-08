@@ -37,6 +37,9 @@ public final class ImpersonateGamerules {
     public static final GameRules.Key<GameRules.BooleanRule> OP_REVEAL_IMPERSONATIONS =
         register("opRevealImpersonations", GameRuleFactory.createBooleanRule(true));
 
+    public static final GameRules.Key<GameRules.BooleanRule> LOG_REVEAL_IMPERSONATIONS =
+        register("logRevealImpersonations", GameRuleFactory.createBooleanRule(true));
+
     private static <T extends GameRules.Rule<T>> GameRules.Key<T> register(String name, GameRules.Type<T> type) {
         return GameRuleRegistry.register("impersonate:" + name, GameRules.Category.PLAYER, type);
     }

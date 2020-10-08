@@ -17,18 +17,27 @@
  */
 package io.github.ladysnake.impersonate.impl.mixin;
 
+import io.github.ladysnake.impersonate.impl.ImpersonateGamerules;
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.text.Text;
+import net.minecraft.world.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements CommandOutput {
+    @Shadow
+    public abstract GameRules getGameRules();
+
     @ModifyVariable(method = "sendSystemMessage", at = @At("HEAD"), argsOnly = true)
     private Text revealImpersonatorsInMessages(Text message) {
-        return ((RecipientAwareText) message).impersonateResolveAll(this);
+        if (this.getGameRules().getBoolean(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
+            return ((RecipientAwareText) message).impersonateResolveAll(this);
+        }
+        return message;
     }
 }

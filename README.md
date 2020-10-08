@@ -36,7 +36,8 @@ commands.
     
 ### Gamerules
 - `impersonate:fakeCapes` : Whether impersonators should get the cape and elytra of impersonated players. Defaults to `false`.  
-- `impersonate:opRevealImpersonations` : Whether impersonations should be revealed to online server operators like they get revealed in the server logs. Defaults to `true`.  
+- `impersonate:opRevealImpersonations` : Whether ongoing impersonations should be revealed to online server operators. Defaults to `true`.  
+- `impersonate:logRevealImpersonations` : Whether ongoing impersonations should be revealed in the server logs. Defaults to `true`.  
 
 ## Adding Impersonate to your project
 

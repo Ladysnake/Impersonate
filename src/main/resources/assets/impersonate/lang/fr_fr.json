@@ -1,0 +1,9 @@
+{
+  "impersonate:commands.disguise.clear.success.other": "%s a arrêté d'usurper l'identité de %s",
+  "impersonate:commands.disguise.clear.success.self": "Fini d'usurper l'identité de %s",
+  "impersonate:commands.disguise.start.success.other": "%s a commencé à usurper l'identité de %s",
+  "impersonate:commands.disguise.start.success.self": "Commencé à usurper l'identité de %s",
+  "gamerule.impersonate:fakeCapes": "Copier les capes des joueurs dont l'identité est usurpée",
+  "gamerule.impersonate:logRevealImpersonations": "Révéler les impostures dans les journaux du serveur",
+  "gamerule.impersonate:opRevealImpersonations": "Révéler les impostures aux opérateurs"
+}

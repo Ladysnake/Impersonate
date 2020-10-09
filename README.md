@@ -20,7 +20,7 @@ will:
 
 They will however not fool the impersonated player's pets, if any.
 
-To avoid moderation chaos, server logs will always display the actual player's name, alongside their fake identity.
+To avoid moderation chaos, server logs will always display the actual player's name, alongside their fake identity. Server operators will have ongoing impersonations revealed in the same way.
 
 ### Commands  
 Impersonate adds the `/impersonate` command, allowing server operators and mapmakers to interact with the API through

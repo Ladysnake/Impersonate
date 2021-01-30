@@ -9,9 +9,6 @@
   "authors": [
     "Pyrofab"
   ],
-  "credits": [
-
-  ],
   "contact": {
     "sources": "https://github.com/Ladysnake/Impersonate",
     "issues": "https://github.com/Ladysnake/Impersonate/issues",
@@ -30,6 +27,10 @@
     {
       "environment": "*",
       "config": "mixins.impersonate.common.json"
+    },
+    {
+      "environment": "client",
+      "config": "mixins.impersonate.client.json"
     }
   ],
   "depends": {

@@ -12,6 +12,7 @@
     "PlayerEntityMixin",
     "PlayerListS2CPacketAccessor",
     "PlayerListS2CPacketEntryAccessor",
+    "PlayerManagerMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "TextMixin",

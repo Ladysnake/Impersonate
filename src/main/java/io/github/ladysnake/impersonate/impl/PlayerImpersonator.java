@@ -18,11 +18,10 @@
 package io.github.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
-import dev.onyxstudios.cca.api.v3.component.AutoSyncedComponent;
+import dev.onyxstudios.cca.api.v3.component.CopyableComponent;
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
-import nerdhub.cardinal.components.api.ComponentType;
-import nerdhub.cardinal.components.api.component.extension.CopyableComponent;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -149,11 +148,6 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     @Override
-    public @NotNull ComponentType<Impersonator> getComponentType() {
-        return (ComponentType<Impersonator>) Impersonate.IMPERSONATION;
-    }
-
-    @Override
     public void copyFrom(PlayerImpersonator other) {
         this.stopImpersonations();
         this.stackedImpersonations.putAll(other.stackedImpersonations);
@@ -164,12 +158,12 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     private static final int NAME_PRESENT = 0b10;
 
     @Override
-    public boolean shouldSyncWith(ServerPlayerEntity player, int syncOp) {
+    public boolean shouldSyncWith(ServerPlayerEntity player) {
         return player == this.player || player.server.getPlayerManager().isOperator(player.getGameProfile());
     }
 
     @Override
-    public void writeToPacket(PacketByteBuf buf, ServerPlayerEntity recipient, int syncOp) {
+    public void writeSyncPacket(PacketByteBuf buf, ServerPlayerEntity recipient) {
         GameProfile profile = this.getImpersonatedProfile();
         UUID id = profile == null ? null : profile.getId();
         String name = profile == null ? null : profile.getName();
@@ -183,7 +177,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     @Override
-    public void readFromPacket(PacketByteBuf buf) {
+    public void applySyncPacket(PacketByteBuf buf) {
         byte flags = buf.readByte();
         UUID id = null;
         String name = null;

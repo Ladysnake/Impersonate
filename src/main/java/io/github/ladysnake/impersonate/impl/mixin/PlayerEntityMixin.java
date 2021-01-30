@@ -26,7 +26,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -46,9 +45,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Shadow
     @Final
     protected static TrackedData<Byte> PLAYER_MODEL_PARTS;
-
-    @Shadow
-    protected abstract MutableText addTellClickEvent(MutableText component);
 
     @Unique
     private boolean wantsCapeDisplay;
@@ -85,6 +81,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     private void fakeName(CallbackInfoReturnable<Text> cir) {
         PlayerEntity self = ((PlayerEntity) (Object) this);
         if (Impersonator.get(self).isImpersonating()) {
+            // if the client is aware that there is an impersonation, they should display it
             cir.setReturnValue(ImpersonateText.get(self, world.isClient));
         }
     }

@@ -30,6 +30,10 @@
     {
       "environment": "*",
       "config": "mixins.impersonate.common.json"
+    },
+    {
+      "environment": "client",
+      "config": "mixins.impersonate.client.json"
     }
   ],
   "depends": {

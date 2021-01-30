@@ -26,7 +26,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.scoreboard.Team;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
@@ -82,12 +81,11 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         dataTracker.set(PLAYER_MODEL_PARTS, newModelMask);
     }
 
-    @Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getName", at = @At("RETURN"), cancellable = true)
     private void fakeName(CallbackInfoReturnable<Text> cir) {
         PlayerEntity self = ((PlayerEntity) (Object) this);
         if (Impersonator.get(self).isImpersonating()) {
-            MutableText mutableText = Team.modifyText(this.getScoreboardTeam(),ImpersonateText.get(self, world.isClient));
-            cir.setReturnValue(addTellClickEvent(mutableText));
+            cir.setReturnValue(ImpersonateText.get(self, world.isClient));
         }
     }
 }

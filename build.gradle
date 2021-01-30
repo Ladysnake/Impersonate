@@ -1,3 +1,4 @@
+import com.modrinth.minotaur.TaskModrinthUpload
 import net.fabricmc.loom.task.RemapJarTask
 
 import java.time.Year
@@ -9,6 +10,7 @@ plugins {
     id "com.jfrog.bintray" version '1.8.4'
     id 'org.ajoberstar.grgit' version '3.1.1'
     id 'com.github.breadmoirai.github-release' version '2.2.9'
+    id 'com.modrinth.minotaur' version '1.1.0'
     id 'java-library'
     id 'maven-publish'
 }
@@ -135,3 +137,25 @@ license {
 }
 
 apply from: 'release.gradle'
+
+task modrinth (type: TaskModrinthUpload, dependsOn: checkGitStatus){
+    if (project.hasProperty('modrinth_key') != null) {
+        token = project.findProperty('modrinth_key')
+    }
+    projectId = findProperty("modrinth_id")
+    versionNumber = project.version
+    uploadFile = remapJar
+    subprojects {
+        addFile(remapJar)
+    }
+    changelog = project.getChangelogText()
+    "${project.curseforge_versions}".split('; ').each {
+        addGameVersion it
+    }
+    addLoader('fabric')
+}
+
+task release(dependsOn: [tasks.publish, tasks.githubRelease, tasks.bintrayUpload, tasks.curseforge, tasks.modrinth]) {
+    group = 'publishing'
+    description = 'Releases a new version to Maven, Github and Curseforge'
+}

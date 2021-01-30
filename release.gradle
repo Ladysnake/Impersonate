@@ -1,4 +1,4 @@
-apply from: 'https://raw.githubusercontent.com/NerdHubMC/Gradle-Scripts/master/scripts/fabric/publish/changelog.gradle'
+apply from: 'https://raw.githubusercontent.com/OnyxStudios/Gradle-Scripts/master/scripts/fabric/publish/changelog.gradle'
 
 task checkGitStatus() {
     group = 'publishing'
@@ -154,8 +154,3 @@ curseforge {
 }
 
 tasks.curseforge.dependsOn(checkGitStatus)
-
-task release(dependsOn: [tasks.publish, tasks.githubRelease, tasks.bintrayUpload, tasks.curseforge]) {
-    group = 'publishing'
-    description = 'Releases a new version to Maven, Github and Curseforge'
-}

@@ -220,8 +220,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
             for (Map.Entry<Identifier, GameProfile> entry : this.stackedImpersonations.entrySet()) {
                 CompoundTag nbtEntry = new CompoundTag();
                 nbtEntry.putString("impersonation_key", entry.getKey().toString());
-                NbtHelper.fromGameProfile(nbtEntry, entry.getValue());
-                profiles.add(nbtEntry);
+                profiles.add(NbtHelper.fromGameProfile(nbtEntry, entry.getValue()));
             }
             tag.put("impersonations", profiles);
         }

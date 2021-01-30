@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Version 2.1.0
+------------------------------------------------------
+- Fixed a major bug that prevented players from being saved while impersonating someone
+- Fixed capes not working despite `impersonate:fakeCapes` being enabled
+- Removed invalid entries from mod metadata
+
+------------------------------------------------------
 Version 2.0.3
 ------------------------------------------------------
 - Added a gamerule to disable server logs revealing impersonations

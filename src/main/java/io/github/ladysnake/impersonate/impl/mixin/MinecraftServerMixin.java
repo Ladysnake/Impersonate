@@ -21,6 +21,7 @@ import io.github.ladysnake.impersonate.impl.ImpersonateGamerules;
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,9 +34,12 @@ public abstract class MinecraftServerMixin implements CommandOutput {
     @Shadow
     public abstract GameRules getGameRules();
 
+    @Shadow
+    public abstract ServerWorld getOverworld();
+
     @ModifyVariable(method = "sendSystemMessage", at = @At("HEAD"), argsOnly = true)
     private Text revealImpersonatorsInMessages(Text message) {
-        if (this.getGameRules().getBoolean(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
+        if (this.getOverworld() == null || this.getGameRules().getBoolean(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
             return ((RecipientAwareText) message).impersonateResolveAll(this);
         }
         return message;

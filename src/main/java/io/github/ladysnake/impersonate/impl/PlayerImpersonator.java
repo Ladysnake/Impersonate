@@ -92,7 +92,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
             this.impersonatedProfile = profile;
             this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
             if (this.player instanceof ServerPlayerEntity) {
-                ServerPlayerSkins.setSkin(((ServerPlayerEntity) player), this.getEditedProfile().getName());
+                ServerPlayerSkins.setSkin(((ServerPlayerEntity) player), profile == null ? this.getActualProfile() : profile);
             }
             updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
             Impersonate.IMPERSONATION.sync(this.player);

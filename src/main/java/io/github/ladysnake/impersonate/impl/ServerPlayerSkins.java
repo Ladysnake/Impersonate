@@ -17,6 +17,10 @@
  */
 package io.github.ladysnake.impersonate.impl;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import io.github.ladysnake.impersonate.Impersonate;
@@ -29,13 +33,14 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkManager;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -47,8 +52,7 @@ import java.util.concurrent.Executors;
 /**
  * This class contains methods to change a player's skin serverside.
  *
- * <p>
- * This class has been adapted from the FabricTailor mod's <a href="https://github.com/samolego/FabricTailor/blob/1.0.0/src/main/java/org/samo_lego/fabrictailor/FabricTailor.java">source code</a>
+ * <p>This class has been adapted from the FabricTailor mod's <a href="https://github.com/samolego/FabricTailor/blob/1.0.0/src/main/java/org/samo_lego/fabrictailor/FabricTailor.java">source code</a>
  * under GNU Lesser General Public License.
  *
  * @author samo_lego
@@ -56,27 +60,28 @@ import java.util.concurrent.Executors;
 public final class ServerPlayerSkins {
     private static final ExecutorService THREADPOOL = Executors.newCachedThreadPool();
 
-    public static void setSkin(@NotNull ServerPlayerEntity player, String playername) {
+    public static void setSkin(@NotNull ServerPlayerEntity player, GameProfile profile) {
         THREADPOOL.submit(() -> {
-            // If user has no skin data
-            // Getting skin data from ely.by api, since it can be used with usernames
-            // it also includes mojang skins
             try {
-                HttpURLConnection connection = (HttpURLConnection) new URL("http://skinsystem.ely.by/textures/signed/" + playername + ".png?proxy=true").openConnection();
+                HttpURLConnection connection = (HttpURLConnection) new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + profile.getId().toString().replace("-", "") + "?unsigned=false").openConnection();
                 String value;
                 String signature;
 
+                fetch:
                 if (connection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
-                    String reply = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
-
-                    if (reply.contains("error")) {
-                        Impersonate.LOGGER.error("Failed to retrieve skin for {}", playername);
-                        value = null;
-                        signature = null;
-                    } else {
-                        value = reply.split("\"value\":\"")[1].split("\"")[0];
-                        signature = reply.split("\"signature\":\"")[1].split("\"")[0];
+                    String reply = IOUtils.toString(new InputStreamReader(connection.getInputStream()));
+                    JsonObject json = JsonHelper.deserialize(reply);
+                    for (JsonElement prop : JsonHelper.getArray(json, "properties")) {
+                        JsonObject property = JsonHelper.asObject(prop, "property");
+                        if (JsonHelper.getString(property, "name").equals("textures")) {
+                            value = JsonHelper.getString(property, "value");
+                            signature = JsonHelper.getString(property, "signature");
+                            break fetch;
+                        }
                     }
+                    Impersonate.LOGGER.error("No skin texture data in response for {}", profile.getName());
+                    value = null;
+                    signature = null;
                 } else {
                     value = null;
                     signature = null;
@@ -85,8 +90,8 @@ public final class ServerPlayerSkins {
                 Objects.requireNonNull(player.world.getServer()).execute(() ->
                     setPlayerSkin(player, value, signature)
                 );
-            } catch (IOException e) {
-                Impersonate.LOGGER.error("Failed to retrieve skin for {}", playername, e);
+            } catch (IOException | JsonSyntaxException e) {
+                Impersonate.LOGGER.error("Failed to retrieve skin for {}", profile.getName(), e);
             }
         });
     }

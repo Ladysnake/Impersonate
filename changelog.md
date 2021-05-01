@@ -1,4 +1,10 @@
 ------------------------------------------------------
+Version 2.1.1
+------------------------------------------------------
+- Fixed a bug where some skins would not load correctly
+- Fixed a crash at launch with LuckPerms
+
+------------------------------------------------------
 Version 2.1.0
 ------------------------------------------------------
 - Fixed a major bug that prevented players from being saved while impersonating someone

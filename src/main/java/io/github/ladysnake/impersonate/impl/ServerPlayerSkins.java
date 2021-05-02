@@ -66,6 +66,7 @@ import java.util.concurrent.Executors;
  */
 public final class ServerPlayerSkins {
     public static final Identifier RELOAD_SKIN_PACKET = new Identifier("impersonate", "impersonation");
+    private static final boolean FORCE_VANILLA_RELOADING = Boolean.getBoolean("impersonate.force_vanilla_reloading");
     private static final ExecutorService THREADPOOL = Executors.newCachedThreadPool();
     private static CompletableFuture<Pair<String, String>> currentSkinTask = CompletableFuture.completedFuture(null);
 
@@ -143,10 +144,10 @@ public final class ServerPlayerSkins {
             trackerEntry.getEntry().startTracking(tracking);
         }
 
-        if (ServerPlayNetworking.canSend(player, RELOAD_SKIN_PACKET)) {
-            ServerPlayNetworking.send(player, RELOAD_SKIN_PACKET, PacketByteBufs.empty());
-        } else {
+        if (FORCE_VANILLA_RELOADING || !ServerPlayNetworking.canSend(player, RELOAD_SKIN_PACKET)) {
             reloadSkinVanilla(player);
+        } else {
+            ServerPlayNetworking.send(player, RELOAD_SKIN_PACKET, PacketByteBufs.empty());
         }
     }
 

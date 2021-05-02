@@ -23,6 +23,7 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.datafixers.util.Pair;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.mixin.EntityTrackerAccessor;
@@ -43,9 +44,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,41 +62,39 @@ import java.util.concurrent.Executors;
  */
 public final class ServerPlayerSkins {
     private static final ExecutorService THREADPOOL = Executors.newCachedThreadPool();
+    private static CompletableFuture<Pair<String, String>> currentSkinTask = CompletableFuture.completedFuture(null);
 
-    public static void setSkin(@NotNull ServerPlayerEntity player, GameProfile profile) {
-        THREADPOOL.submit(() -> {
+    public static synchronized void setSkin(@NotNull ServerPlayerEntity player, GameProfile profile) {
+        CompletableFuture<?> previousSkinTask = currentSkinTask;
+        currentSkinTask = CompletableFuture.<Pair<String, String>>supplyAsync(() -> {
             try {
                 HttpURLConnection connection = (HttpURLConnection) new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + profile.getId().toString().replace("-", "") + "?unsigned=false").openConnection();
-                String value;
-                String signature;
 
-                fetch:
                 if (connection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
                     String reply = IOUtils.toString(new InputStreamReader(connection.getInputStream()));
                     JsonObject json = JsonHelper.deserialize(reply);
                     for (JsonElement prop : JsonHelper.getArray(json, "properties")) {
                         JsonObject property = JsonHelper.asObject(prop, "property");
                         if (JsonHelper.getString(property, "name").equals("textures")) {
-                            value = JsonHelper.getString(property, "value");
-                            signature = JsonHelper.getString(property, "signature");
-                            break fetch;
+                            return Pair.of(
+                                JsonHelper.getString(property, "value"),
+                                JsonHelper.getString(property, "signature")
+                            );
                         }
                     }
-                    Impersonate.LOGGER.error("No skin texture data in response for {}", profile.getName());
-                    value = null;
-                    signature = null;
+                    throw new JsonSyntaxException("No skin texture data in response for " + profile.getName());
                 } else {
-                    value = null;
-                    signature = null;
+                    return Pair.of(null, null);    // no throwing exception to avoid spamming logs when offline
                 }
-
-                Objects.requireNonNull(player.world.getServer()).execute(() ->
-                    setPlayerSkin(player, value, signature)
-                );
-            } catch (IOException | JsonSyntaxException e) {
-                Impersonate.LOGGER.error("Failed to retrieve skin for {}", profile.getName(), e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
+        }, THREADPOOL).exceptionally(e -> {
+            Impersonate.LOGGER.error("Failed to retrieve skin for " + profile.getName(), e);
+            return Pair.of(null, null);
         });
+        // we wait for the previous skin fetching to complete, to avoid setting skins in the wrong order
+        currentSkinTask.thenAcceptBothAsync(previousSkinTask, (pair, o) -> setPlayerSkin(player, pair.getFirst(), pair.getSecond()), player.world.getServer());
     }
 
     /**

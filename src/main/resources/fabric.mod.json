@@ -19,6 +19,9 @@
     "main": [
       "io.github.ladysnake.impersonate.Impersonate"
     ],
+    "client": [
+      "io.github.ladysnake.impersonate.impl.ImpersonateClient"
+    ],
     "cardinal-components-entity": [
       "io.github.ladysnake.impersonate.Impersonate"
     ]

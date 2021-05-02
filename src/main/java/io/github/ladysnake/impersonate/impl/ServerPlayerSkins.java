@@ -28,12 +28,16 @@ import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.mixin.EntityTrackerAccessor;
 import io.github.ladysnake.impersonate.impl.mixin.ThreadedAnvilChunkStorageAccessor;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkManager;
@@ -61,6 +65,7 @@ import java.util.concurrent.Executors;
  * @author samo_lego
  */
 public final class ServerPlayerSkins {
+    public static final Identifier RELOAD_SKIN_PACKET = new Identifier("impersonate", "impersonation");
     private static final ExecutorService THREADPOOL = Executors.newCachedThreadPool();
     private static CompletableFuture<Pair<String, String>> currentSkinTask = CompletableFuture.completedFuture(null);
 
@@ -138,6 +143,14 @@ public final class ServerPlayerSkins {
             trackerEntry.getEntry().startTracking(tracking);
         }
 
+        if (ServerPlayNetworking.canSend(player, RELOAD_SKIN_PACKET)) {
+            ServerPlayNetworking.send(player, RELOAD_SKIN_PACKET, PacketByteBufs.empty());
+        } else {
+            reloadSkinVanilla(player);
+        }
+    }
+
+    private static void reloadSkinVanilla(ServerPlayerEntity player) {
         // need to change the player entity on the client
         ServerWorld targetWorld = (ServerWorld) player.world;
         player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(targetWorld.getDimension(), targetWorld.getRegistryKey(), BiomeAccess.hashSeed(targetWorld.getSeed()), player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(), targetWorld.isDebugWorld(), targetWorld.isFlat(), true));

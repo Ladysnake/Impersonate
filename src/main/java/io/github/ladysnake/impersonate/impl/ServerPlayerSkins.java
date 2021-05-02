@@ -149,6 +149,8 @@ public final class ServerPlayerSkins {
         }
         player.sendAbilitiesUpdate();
         player.server.getPlayerManager().sendWorldInfo(player, targetWorld);
+        Entity vehicle = player.getVehicle();
+        if (vehicle != null) player.networkHandler.sendPacket(new EntityPassengersSetS2CPacket(vehicle));
         player.server.getPlayerManager().sendPlayerStatus(player);
     }
 }

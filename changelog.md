@@ -1,4 +1,14 @@
 ------------------------------------------------------
+Version 2.2.0
+------------------------------------------------------
+- Improved skin reloading for modded clients that also have Impersonate installed:
+    - No more weird rotation in first person
+    - No more desynchronization issues
+- Fixed crash with latest Fabric API due to old Cardinal Components dependency
+- Fixed a desync when a player got its skin reloaded while riding
+- Fixed skin changes sometimes just not applying
+
+------------------------------------------------------
 Version 2.1.1
 ------------------------------------------------------
 - Fixed a bug where some skins would not load correctly

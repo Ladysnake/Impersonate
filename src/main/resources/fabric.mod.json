@@ -39,7 +39,9 @@
   "depends": {
     "minecraft": ">=1.16-",
     "fabric": "*",
-    "cardinal-components-entity": "^2.4.0-"
+    "cardinal-components-base": "^2.7.0-",
+    "cardinal-components-entity": "^2.7.0-",
+    "fabric-permissions-api-v0": "*"
   },
   "custom": {
     "cardinal-components": [

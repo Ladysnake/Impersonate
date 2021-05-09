@@ -1,4 +1,9 @@
 ------------------------------------------------------
+Version 2.2.1
+------------------------------------------------------
+- Added compatibility with fabric permission mods such as LuckPerms
+
+------------------------------------------------------
 Version 2.2.0
 ------------------------------------------------------
 - Improved skin reloading for modded clients that also have Impersonate installed:

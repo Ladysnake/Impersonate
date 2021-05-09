@@ -21,6 +21,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.ladysnake.impersonate.Impersonator;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
@@ -43,12 +44,17 @@ public final class ImpersonateCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("impersonate")
-            .requires(s -> s.hasPermissionLevel(2))
+            // Require perms at the root to avoid showing empty "/impersonate" command to regular players
+            .requires(Permissions.require("impersonate.command.disguise.self", 2))
             .then(literal("disguise")
+                // Require perms again in case we add more subcommands in the future
+                .requires(Permissions.require("impersonate.command.disguise.self", 2))
                 .then(literal("as")
                     .then(argument("disguise", GameProfileArgumentType.gameProfile())
                         .executes(context -> startImpersonation(context.getSource(), GameProfileArgumentType.getProfileArgument(context, "disguise"), Collections.singleton(context.getSource().getPlayer()), DEFAULT_IMPERSONATION_KEY))
                         .then(argument("targets", EntityArgumentType.players())
+                            // Require another permission for disguising other people
+                            .requires(Permissions.require("impersonate.command.disguise", 2))
                             .executes(context -> startImpersonation(context.getSource(), GameProfileArgumentType.getProfileArgument(context, "disguise"), EntityArgumentType.getPlayers(context, "targets"), DEFAULT_IMPERSONATION_KEY))
                             .then(argument("key", IdentifierArgumentType.identifier())
                                 .executes(context -> startImpersonation(context.getSource(), GameProfileArgumentType.getProfileArgument(context, "disguise"), EntityArgumentType.getPlayers(context, "targets"), IdentifierArgumentType.getIdentifier(context, "key")))
@@ -59,6 +65,8 @@ public final class ImpersonateCommand {
                 .then(literal("clear")
                     .executes(context -> stopImpersonation(context.getSource(), Collections.singleton(context.getSource().getPlayer()), null))
                     .then(argument("targets", EntityArgumentType.players())
+                        // Require another permission for disguising other people
+                        .requires(Permissions.require("impersonate.command.disguise", 2))
                         .executes(context -> stopImpersonation(context.getSource(), EntityArgumentType.getPlayers(context, "targets"), null))
                         .then(argument("key", IdentifierArgumentType.identifier())
                             .executes(context -> stopImpersonation(context.getSource(), EntityArgumentType.getPlayers(context, "targets"), IdentifierArgumentType.getIdentifier(context, "key")))

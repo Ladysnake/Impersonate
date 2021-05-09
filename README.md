@@ -34,6 +34,10 @@ commands.
         - `[<targets>]` (optional) : If specified, must be either a player's username or a target selector. If unspecified, defaults to the player using the command. When used in a command block, player is not optional.  
         - `[<key>]` (optional) : If specified, must be a valid identifier that was previously used as a key to start an impersonation. If left unspecified, the command will clear every active impersonation.  
     
+#### Permissions
+If you have LuckPerms installed, the above commands can be used by players with the `impersonate.command.disguise` permission.
+If you only grant `impersonate.command.disguise.self`, players will only be able to use the commands on themselves.
+
 ### Gamerules
 - `impersonate:fakeCapes` : Whether impersonators should get the cape and elytra of impersonated players. Defaults to `false`.  
 - `impersonate:opRevealImpersonations` : Whether ongoing impersonations should be revealed to online server operators. Defaults to `true`.  

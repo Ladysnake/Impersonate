@@ -49,10 +49,17 @@ You can add the library by inserting the following in your `build.gradle` :
 
 ```gradle
 repositories {
-    jcenter()
 	maven { 
         name = "Ladysnake Mods"
         url = "https://ladysnake.jfrog.io/artifactory/mods"
+        content {
+            includeGroup 'io.github.ladysnake'
+            includeGroupByRegex 'io\\.github\\.onyxstudios.*'
+        }
+    }
+    maven {
+        name = "Nexus Repository Manager"
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
     }
 }
 
@@ -60,6 +67,7 @@ dependencies {
     modImplementation "io.github.ladysnake:Impersonate:${impersonate_version}"
     include "io.github.ladysnake:Impersonate:${impersonate_version}"
     // Impersonate dependencies
+    include "me.lucko:fabric-permissions-api:${fpa_version}"
     include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"
     include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
 }
@@ -70,6 +78,8 @@ You can then add the library version to your `gradle.properties`file:
 ```properties
 # Impersonate
 impersonate_version = 1.x.y
+# Fabric Permissions API
+fpa_version = 0.1-SNAPSHOT
 # Cardinal Components
 cca_version = 2.x.y
 ```

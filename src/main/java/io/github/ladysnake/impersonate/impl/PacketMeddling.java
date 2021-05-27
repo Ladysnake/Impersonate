@@ -23,6 +23,7 @@ import io.github.ladysnake.impersonate.impl.mixin.GameMessageS2CPacketAccessor;
 import io.github.ladysnake.impersonate.impl.mixin.PlayerListS2CPacketAccessor;
 import io.github.ladysnake.impersonate.impl.mixin.PlayerListS2CPacketEntryAccessor;
 import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
@@ -30,8 +31,10 @@ import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.function.Function;
 
 public final class PacketMeddling {
     @NotNull
@@ -59,15 +62,11 @@ public final class PacketMeddling {
         }
     }
 
-    public static <P extends Packet<?>> boolean copyPacket(P packet, P copy) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static <P extends Packet<?>> P copyPacket(P packet, Function<PacketByteBuf, P> factory) {
+        PacketByteBuf buf = PacketByteBufs.create();
         try {
             packet.write(buf);
-            copy.read(buf);
-            return true;
-        } catch (IOException e) {
-            Impersonate.LOGGER.warn("Failed to copy packet " + packet, e);
-            return false;
+            return factory.apply(buf);
         } finally {
             buf.release();
         }

@@ -28,6 +28,4 @@ import java.util.Set;
 public interface EntityTrackerAccessor {
     @Accessor
     EntityTrackerEntry getEntry();
-    @Accessor
-    Set<ServerPlayerEntity> getPlayersTracking();
 }

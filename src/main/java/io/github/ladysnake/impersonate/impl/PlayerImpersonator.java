@@ -24,9 +24,9 @@ import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.PlayerManager;
@@ -191,12 +191,12 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     @Override
-    public void readFromNbt(@NotNull CompoundTag tag) {
+    public void readFromNbt(@NotNull NbtCompound tag) {
         if (tag.contains("impersonations", NbtType.LIST)) {
             this.stopImpersonations();
-            ListTag impersonations = tag.getList("impersonations", NbtType.COMPOUND);
+            NbtList impersonations = tag.getList("impersonations", NbtType.COMPOUND);
             for (int i = 0; i < impersonations.size(); i++) {
-                CompoundTag nbtEntry = impersonations.getCompound(i);
+                NbtCompound nbtEntry = impersonations.getCompound(i);
                 Identifier key = Identifier.tryParse(nbtEntry.getString("impersonation_key"));
                 GameProfile profile = NbtHelper.toGameProfile(nbtEntry);
                 if (key != null && profile != null) {
@@ -208,13 +208,13 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     @Override
-    public void writeToNbt(@NotNull CompoundTag tag) {
+    public void writeToNbt(@NotNull NbtCompound tag) {
         if (this.isImpersonating()) {
-            ListTag profiles = new ListTag();
-            for (Map.Entry<Identifier, GameProfile> entry : this.stackedImpersonations.entrySet()) {
-                CompoundTag nbtEntry = new CompoundTag();
+            NbtList profiles = new NbtList();
+            for (var entry : this.stackedImpersonations.entrySet()) {
+                NbtCompound nbtEntry = new NbtCompound();
                 nbtEntry.putString("impersonation_key", entry.getKey().toString());
-                profiles.add(NbtHelper.fromGameProfile(nbtEntry, entry.getValue()));
+                profiles.add(NbtHelper.writeGameProfile(nbtEntry, entry.getValue()));
             }
             tag.put("impersonations", profiles);
         }

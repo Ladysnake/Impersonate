@@ -17,19 +17,18 @@
  */
 package io.github.ladysnake.impersonate.impl.mixin;
 
-import com.mojang.authlib.GameProfile;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.text.Text;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
 
 /**
- * @see PlayerListS2CPacketEntryMixin
+ * @see PlayerListS2CPacketEntryAccessor
  */
 @Mixin(PlayerListS2CPacket.Entry.class)
-public interface PlayerListS2CPacketEntryAccessor {
-    @Accessor   // Final, so needs the other mixin to make mutable
-    void setDisplayName(Text displayName);
-    @Accessor
-    void setProfile(GameProfile profile);
+public abstract class PlayerListS2CPacketEntryMixin {
+    @SuppressWarnings("unused") // only here to remove the final from displayName
+    @Mutable @Final @Shadow private Text displayName;
 }

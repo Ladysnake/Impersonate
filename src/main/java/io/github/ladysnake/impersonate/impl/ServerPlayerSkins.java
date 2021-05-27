@@ -29,6 +29,7 @@ import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.mixin.EntityTrackerAccessor;
 import io.github.ladysnake.impersonate.impl.mixin.ThreadedAnvilChunkStorageAccessor;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -138,9 +139,9 @@ public final class ServerPlayerSkins {
         ChunkManager manager = player.world.getChunkManager();
         assert manager instanceof ServerChunkManager;
         ThreadedAnvilChunkStorage storage = ((ServerChunkManager)manager).threadedAnvilChunkStorage;
-        EntityTrackerAccessor trackerEntry = ((ThreadedAnvilChunkStorageAccessor) storage).getEntityTrackers().get(player.getEntityId());
+        EntityTrackerAccessor trackerEntry = ((ThreadedAnvilChunkStorageAccessor) storage).getEntityTrackers().get(player.getId());
 
-        for (ServerPlayerEntity tracking : trackerEntry.getPlayersTracking()) {
+        for (ServerPlayerEntity tracking : PlayerLookup.tracking(player)) {
             trackerEntry.getEntry().startTracking(tracking);
         }
 
@@ -155,12 +156,12 @@ public final class ServerPlayerSkins {
         // need to change the player entity on the client
         ServerWorld targetWorld = (ServerWorld) player.world;
         player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(targetWorld.getDimension(), targetWorld.getRegistryKey(), BiomeAccess.hashSeed(targetWorld.getSeed()), player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(), targetWorld.isDebugWorld(), targetWorld.isFlat(), true));
-        player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.yaw, player.pitch);
+        player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
         player.server.getPlayerManager().sendCommandTree(player);
         player.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(player.experienceProgress, player.totalExperience, player.experienceLevel));
         player.networkHandler.sendPacket(new HealthUpdateS2CPacket(player.getHealth(), player.getHungerManager().getFoodLevel(), player.getHungerManager().getSaturationLevel()));
         for (StatusEffectInstance statusEffect : player.getStatusEffects()) {
-            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), statusEffect));
+            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), statusEffect));
         }
         player.sendAbilitiesUpdate();
         player.server.getPlayerManager().sendWorldInfo(player, targetWorld);

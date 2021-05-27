@@ -37,22 +37,17 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
     @ModifyArg(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V"))
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
-        if (packet instanceof GameMessageS2CPacket) {
+        if (packet instanceof GameMessageS2CPacket gamePacket) {
             if (this.existsImpersonator()) {
                 // copying the packet converts hidden texts to literals, so we must resolve it before that
-                PacketMeddling.resolveFakeTexts((GameMessageS2CPacket) packet, player);
-                GameMessageS2CPacket copy = new GameMessageS2CPacket();
-                if (PacketMeddling.copyPacket(packet, copy)) {
-                    return copy;
-                }
+                PacketMeddling.resolveFakeTexts(gamePacket, player);
+                return PacketMeddling.copyPacket(packet, GameMessageS2CPacket::new);
             }
-        } else if (packet instanceof PlayerListS2CPacket) {
+        } else if (packet instanceof PlayerListS2CPacket listPacket) {
             if (this.existsImpersonator()) {
-                PlayerListS2CPacket copy = new PlayerListS2CPacket();
-                if (PacketMeddling.copyPacket(packet, copy)) {
-                    PacketMeddling.resolvePlayerListEntries(copy, player);
-                    return copy;
-                }
+                PlayerListS2CPacket copy = PacketMeddling.copyPacket(listPacket, PlayerListS2CPacket::new);
+                PacketMeddling.resolvePlayerListEntries(copy, player);
+                return copy;
             }
         }
         return packet;

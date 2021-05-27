@@ -4,19 +4,19 @@ import net.fabricmc.loom.task.RemapJarTask
 import java.time.Year
 
 plugins {
-    id 'fabric-loom' version '0.7-SNAPSHOT'
-    id "net.minecrell.licenser" version "0.4.1"
+    id 'fabric-loom' version '0.8-SNAPSHOT'
+    id "org.cadixdev.licenser" version "0.6.0"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
-    id 'com.jfrog.artifactory' version '4.20.0'
+    id 'com.jfrog.artifactory' version '4.21.0'
     id 'org.ajoberstar.grgit' version '3.1.1'
     id 'com.github.breadmoirai.github-release' version '2.2.9'
-    id 'com.modrinth.minotaur' version '1.1.0'
+    id 'com.modrinth.minotaur' version '1.2.1'
     id 'java-library'
     id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -64,19 +64,14 @@ dependencies {
     api "org.jetbrains:annotations:${jb_annotations_version}"
     api "org.apiguardian:apiguardian-api:${apiguardian_version}"
 
-    testmodCompile sourceSets.main.output
+    testmodImplementation sourceSets.main.output
 }
 
 processResources {
     inputs.property "version", project.version
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
+    filesMatching("fabric.mod.json") {
         expand "version": project.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
     }
 }
 
@@ -125,8 +120,6 @@ build.dependsOn(remapLibJar)
 license {
     header = rootProject.file("code_quality/${project.license_header}_HEADER.txt")
 
-    // Apply licenses only to main source set
-    sourceSets = [project.sourceSets.main]
     include "**/*.java"
     exclude '**/PlayerSkins.java'
 
@@ -136,7 +129,7 @@ license {
     //export variables
     ext {
         year = Year.now()
-        projectDisplayName = project.name
+        projectDisplayName = project.display_name
         projectOwners = rootProject.owners
         if (project.license_header.contains('GPL')) {
             if (!project.hasProperty("gpl_version")) {

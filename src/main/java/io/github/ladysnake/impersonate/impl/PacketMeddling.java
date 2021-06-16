@@ -19,34 +19,21 @@ package io.github.ladysnake.impersonate.impl;
 
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
-import io.github.ladysnake.impersonate.impl.mixin.GameMessageS2CPacketAccessor;
-import io.github.ladysnake.impersonate.impl.mixin.PlayerListS2CPacketAccessor;
 import io.github.ladysnake.impersonate.impl.mixin.PlayerListS2CPacketEntryAccessor;
-import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.function.Function;
 
 public final class PacketMeddling {
-    @NotNull
-    public static Packet<?> resolveFakeTexts(GameMessageS2CPacket packet, ServerPlayerEntity player) {
-        GameMessageS2CPacketAccessor accessiblePacket = (GameMessageS2CPacketAccessor) packet;
-        accessiblePacket.setMessage(((RecipientAwareText) accessiblePacket.getMessage()).impersonateResolveAll(player));
-        return packet;
-    }
 
     public static void resolvePlayerListEntries(PlayerListS2CPacket packet, ServerPlayerEntity player) {
         boolean reveal = ImpersonateText.shouldBeRevealedBy(player);
-        for (PlayerListS2CPacket.Entry entry : ((PlayerListS2CPacketAccessor) packet).getEntries()) {
+        for (PlayerListS2CPacket.Entry entry : packet.getEntries()) {
             PlayerEntity playerEntry = player.server.getPlayerManager().getPlayer(entry.getProfile().getId());
             if (playerEntry != null) {
                 Impersonator impersonator = Impersonate.IMPERSONATION.get(playerEntry);

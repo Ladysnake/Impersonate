@@ -5,12 +5,10 @@
   "minVersion": "0.7.11-SNAPSHOT",
   "mixins": [
     "EntityTrackerAccessor",
-    "GameMessageS2CPacketAccessor",
     "ListCommandMixin",
     "MinecraftServerMixin",
     "MutableTextMixin",
     "PlayerEntityMixin",
-    "PlayerListS2CPacketAccessor",
     "PlayerListS2CPacketEntryAccessor",
     "PlayerListS2CPacketEntryMixin",
     "PlayerManagerMixin",

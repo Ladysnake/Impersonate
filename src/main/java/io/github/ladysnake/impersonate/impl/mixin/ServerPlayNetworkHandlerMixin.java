@@ -19,11 +19,13 @@ package io.github.ladysnake.impersonate.impl.mixin;
 
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.PacketMeddling;
+import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -39,9 +41,8 @@ public abstract class ServerPlayNetworkHandlerMixin {
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
         if (packet instanceof GameMessageS2CPacket gamePacket) {
             if (this.existsImpersonator()) {
-                // copying the packet converts hidden texts to literals, so we must resolve it before that
-                PacketMeddling.resolveFakeTexts(gamePacket, player);
-                return PacketMeddling.copyPacket(packet, GameMessageS2CPacket::new);
+                Text resolvedText = ((RecipientAwareText) gamePacket.getMessage()).impersonateResolveAll(player);
+                return new GameMessageS2CPacket(resolvedText, gamePacket.getLocation(), gamePacket.getSender());
             }
         } else if (packet instanceof PlayerListS2CPacket listPacket) {
             if (this.existsImpersonator()) {

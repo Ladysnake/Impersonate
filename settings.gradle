@@ -1,6 +1,5 @@
 pluginManagement {
     repositories {
-        jcenter()
         mavenLocal()
         maven {
             name = 'Fabric'
@@ -10,4 +9,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'Impersonate'
+rootProject.name = 'impersonate'

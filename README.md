@@ -47,6 +47,8 @@ If you only grant `impersonate.command.disguise.self`, players will only be able
 
 You can add the library by inserting the following in your `build.gradle` :
 
+**Note: since MC 1.17 builds, the Impersonate dependency must be lowercase.**
+
 ```gradle
 repositories {
 	maven { 
@@ -64,8 +66,8 @@ repositories {
 }
 
 dependencies {
-    modImplementation "io.github.ladysnake:Impersonate:${impersonate_version}"
-    include "io.github.ladysnake:Impersonate:${impersonate_version}"
+    modImplementation "io.github.ladysnake:impersonate:${impersonate_version}"
+    include "io.github.ladysnake:impersonate:${impersonate_version}"
     // Impersonate dependencies
     include "me.lucko:fabric-permissions-api:${fpa_version}"
     include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"

@@ -17,6 +17,7 @@
  */
 package io.github.ladysnake.impersonate.impl.mixin;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
@@ -31,4 +32,6 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class PlayerListS2CPacketEntryMixin {
     @SuppressWarnings("unused") // only here to remove the final from displayName
     @Mutable @Final @Shadow private Text displayName;
+    @SuppressWarnings("unused") // only here to remove the final from displayName
+    @Mutable @Final @Shadow private GameProfile profile;
 }

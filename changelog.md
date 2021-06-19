@@ -1,4 +1,9 @@
 ------------------------------------------------------
+Version 2.3.2
+------------------------------------------------------
+- Fixed non-op players being kicked when in range of an impersonator
+
+------------------------------------------------------
 Version 2.3.1
 ------------------------------------------------------
 - Fixed crash at launch due to an invalid refmap

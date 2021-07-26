@@ -40,6 +40,7 @@ If you only grant `impersonate.command.disguise.self`, players will only be able
 
 ### Gamerules
 - `impersonate:fakeCapes` : Whether impersonators should get the cape and elytra of impersonated players. Defaults to `false`.  
+  - If [Illuminations](https://github.com/Ladysnake/Illuminations) is installed, this option also controls whether a player's cosmetics are mimicked during impersonation
 - `impersonate:opRevealImpersonations` : Whether ongoing impersonations should be revealed to online server operators. Defaults to `true`.  
 - `impersonate:logRevealImpersonations` : Whether ongoing impersonations should be revealed in the server logs. Defaults to `true`.  
 

@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Version 2.3.3
+------------------------------------------------------
+- Added Illuminations compatibility
+  - impersonators' cosmetics disappear during impersonation
+  - if `impersonate:fakeCapes` is enabled, the impersonated player's cosmetics will appear instead
+
+------------------------------------------------------
 Version 2.3.2
 ------------------------------------------------------
 - Fixed non-op players being kicked when in range of an impersonator

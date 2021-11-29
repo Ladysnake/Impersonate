@@ -101,7 +101,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     private void applyCapeGamerule(ServerPlayerEntity player, GameProfile impersonatedProfile) {
-        if (!player.getServerWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
+        if (!player.getWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
             if (impersonatedProfile == null) {
                 ((PlayerEntityExtensions) player).impersonate_resetCape();
             } else {

@@ -42,7 +42,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         if (packet instanceof GameMessageS2CPacket gamePacket) {
             if (this.existsImpersonator()) {
                 Text resolvedText = ((RecipientAwareText) gamePacket.getMessage()).impersonateResolveAll(player);
-                return new GameMessageS2CPacket(resolvedText, gamePacket.getLocation(), gamePacket.getSender());
+                return new GameMessageS2CPacket(resolvedText, gamePacket.getType(), gamePacket.getSender());
             }
         } else if (packet instanceof PlayerListS2CPacket listPacket) {
             if (this.existsImpersonator()) {

@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "io.github.ladysnake.impersonatest.Impersonatest"
+    ],
+    "fabric-gametest": [
+      "io.github.ladysnake.impersonatest.ImpersonateTestSuite"
     ]
   },
   "depends": {

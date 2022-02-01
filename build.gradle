@@ -4,7 +4,7 @@ import net.fabricmc.loom.task.RemapJarTask
 import java.time.Year
 
 plugins {
-    id 'fabric-loom' version '0.10-SNAPSHOT'
+    id 'fabric-loom' version '0.11-SNAPSHOT'
     id "org.cadixdev.licenser" version "0.6.1"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'com.jfrog.artifactory' version '4.21.0'
@@ -15,8 +15,8 @@ plugins {
     id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -30,6 +30,37 @@ sourceSets {
 }
 
 loom {
+    runs {
+        testmodClient {
+            client()
+            ideConfigGenerated project.rootProject == project
+            name = "Testmod Client"
+            source sourceSets.testmod
+        }
+        testmodServer {
+            server()
+            ideConfigGenerated project.rootProject == project
+            name = "Testmod Server"
+            source sourceSets.testmod
+        }
+        gametest {
+            inherit testmodServer
+
+            name "Game Test"
+
+            // Enable the gametest runner
+            vmArg "-Dfabric-api.gametest"
+            vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+            runDir "build/gametest"
+        }
+        autoTestServer {
+            inherit testmodServer
+
+            name "Auto Test Server"
+
+            vmArg "-Dfabric.autoTest"
+        }
+    }
 }
 
 repositories {
@@ -58,14 +89,11 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "me.lucko:fabric-permissions-api:${fpa_version}"
-    include "me.lucko:fabric-permissions-api:${fpa_version}"
-    modApi "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"
-    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
-    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"
-    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
-    modCompileOnly "curse.maven:illuminations-292908:${illuminations_version}"
-//    modRuntimeOnly "curse.maven:illuminations-292908:${illuminations_version}"
+    modImplementation include("me.lucko:fabric-permissions-api:${fpa_version}")
+    modApi include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cca_version}")
+    modImplementation include ("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${cca_version}")
+    modCompileOnly /*modLocalRuntime*/("curse.maven:illuminations-292908:${illuminations_version}")
+    modCompileOnly modLocalRuntime ("io.github.ladysnake:elmendorf:${elmendorf_version}")
 
     api "org.jetbrains:annotations:${jb_annotations_version}"
     api "org.apiguardian:apiguardian-api:${apiguardian_version}"

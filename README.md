@@ -57,7 +57,7 @@ repositories {
         url = "https://ladysnake.jfrog.io/artifactory/mods"
         content {
             includeGroup 'io.github.ladysnake'
-            includeGroupByRegex 'io\\.github\\.onyxstudios.*'
+            includeGroupByRegex '(dev|io\\.github)\\.onyxstudios\\..*'
         }
     }
     maven {
@@ -71,8 +71,8 @@ dependencies {
     include "io.github.ladysnake:impersonate:${impersonate_version}"
     // Impersonate dependencies
     include "me.lucko:fabric-permissions-api:${fpa_version}"
-    include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${cca_version}"
-    include "com.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${cca_version}"
+    include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cca_version}"
+    include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${cca_version}"
 }
 ```
 

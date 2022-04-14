@@ -1,6 +1,6 @@
 /*
  * Impersonate
- * Copyright (C) 2020-2021 Ladysnake
+ * Copyright (C) 2020-2022 Ladysnake
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

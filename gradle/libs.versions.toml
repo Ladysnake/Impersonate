@@ -1,10 +1,10 @@
 [versions]
-impersonate-cca = "4.1.2"
-impersonate-fpa = "0.1-SNAPSHOT"
-impersonate-elmendorf = "0.4.0"
+cca = "4.1.4"
+fpa = "0.1-SNAPSHOT"
+elmendorf = "0.5.2"
 
 [libraries]
-impersonate-cca-base = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-base", version.ref = "impersonate-cca" }
-impersonate-cca-entity = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-entity", version.ref = "impersonate-cca" }
-impersonate-fpa = { module = "me.lucko:fabric-permissions-api", version.ref = "impersonate-fpa" }
-impersonate-elmendorf = { module = "io.github.ladysnake:elmendorf", version.ref = "impersonate-elmendorf"}
+cca-base = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-base", version.ref = "cca" }
+cca-entity = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-entity", version.ref = "cca" }
+fpa = { module = "me.lucko:fabric-permissions-api", version.ref = "fpa" }
+elmendorf = { module = "io.github.ladysnake:elmendorf", version.ref = "elmendorf"}

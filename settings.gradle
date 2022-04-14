@@ -1,12 +1,24 @@
 pluginManagement {
     repositories {
-        mavenLocal()
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+        maven {
+            name = 'Cotton'
+            url = 'https://server.bbkr.space/artifactory/libs-release/'
+        }
+        mavenLocal()
         gradlePluginPortal()
     }
 }
 
 rootProject.name = 'impersonate'
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        compatLibs {
+            from(files('gradle/compat-libs.versions.toml'))
+        }
+    }
+}

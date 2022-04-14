@@ -102,5 +102,6 @@ chenille {
         withArtifactory()
         withCurseforgeRelease()
         withGithubRelease()
+        withModrinthRelease()
     }
 }

@@ -41,8 +41,8 @@ public abstract class ServerPlayNetworkHandlerMixin {
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
         if (packet instanceof GameMessageS2CPacket gamePacket) {
             if (this.existsImpersonator()) {
-                Text resolvedText = ((RecipientAwareText) gamePacket.getMessage()).impersonateResolveAll(player);
-                return new GameMessageS2CPacket(resolvedText, gamePacket.getType(), gamePacket.getSender());
+                Text resolvedText = ((RecipientAwareText) gamePacket.content()).impersonateResolveAll(player);
+                return new GameMessageS2CPacket(resolvedText, gamePacket.typeId());
             }
         } else if (packet instanceof PlayerListS2CPacket listPacket) {
             if (this.existsImpersonator()) {

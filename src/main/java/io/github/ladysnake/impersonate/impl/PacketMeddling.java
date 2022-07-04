@@ -26,13 +26,14 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
 
 import java.util.function.Function;
 
 public final class PacketMeddling {
 
     public static void resolvePlayerListEntries(PlayerListS2CPacket packet, ServerPlayerEntity player) {
-        boolean reveal = ImpersonateText.shouldBeRevealedBy(player);
+        boolean reveal = ImpersonateTextContent.shouldBeRevealedBy(player);
         for (PlayerListS2CPacket.Entry entry : packet.getEntries()) {
             PlayerEntity playerEntry = player.server.getPlayerManager().getPlayer(entry.getProfile().getId());
             if (playerEntry != null) {
@@ -40,7 +41,7 @@ public final class PacketMeddling {
                 if (impersonator.isImpersonating()) {
                     // OPs get the true profile with semi-fake display name, others get a complete lie
                     if (reveal) {
-                        ((PlayerListS2CPacketEntryAccessor) entry).setDisplayName(ImpersonateText.get(playerEntry, true));
+                        ((PlayerListS2CPacketEntryAccessor) entry).setDisplayName(MutableText.of(ImpersonateTextContent.get(playerEntry, true)));
                     } else {
                         ((PlayerListS2CPacketEntryAccessor) entry).setProfile(impersonator.getEditedProfile());
                     }

@@ -22,7 +22,7 @@ import io.github.ladysnake.impersonate.Impersonate;
 import net.minecraft.server.command.ListCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,8 +38,8 @@ public abstract class ListCommandMixin {
     private static void fakeNameAndUuid(ServerPlayerEntity player, CallbackInfoReturnable<Text> cir) {
         Text text = cir.getReturnValue();
 
-        if (text instanceof TranslatableText) {
-            Object[] args = ((TranslatableText) text).getArgs();
+        if (text instanceof TranslatableTextContent cnt) {
+            Object[] args = cnt.getArgs();
             // Defend against other mods changing the text
             if (args.length == 2 && args[0] instanceof Text && args[1] instanceof UUID) {
                 GameProfile impersonatedProfile = Impersonate.IMPERSONATION.get(player).getImpersonatedProfile();

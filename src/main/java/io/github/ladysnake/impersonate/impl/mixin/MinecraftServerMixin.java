@@ -37,7 +37,7 @@ public abstract class MinecraftServerMixin implements CommandOutput {
     @Shadow
     public abstract ServerWorld getOverworld();
 
-    @ModifyVariable(method = "sendSystemMessage", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "sendMessage", at = @At("HEAD"), argsOnly = true)
     private Text revealImpersonatorsInMessages(Text message) {
         if (this.getOverworld() == null || this.getGameRules().getBoolean(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
             return ((RecipientAwareText) message).impersonateResolveAll(this);

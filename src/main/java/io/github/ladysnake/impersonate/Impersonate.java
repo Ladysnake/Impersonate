@@ -26,7 +26,7 @@ import io.github.ladysnake.impersonate.impl.ImpersonateCommand;
 import io.github.ladysnake.impersonate.impl.ImpersonateGamerules;
 import io.github.ladysnake.impersonate.impl.PlayerImpersonator;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +45,7 @@ public final class Impersonate implements ModInitializer, EntityComponentInitial
 
     @Override
     public void onInitialize() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> ImpersonateCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, acc, dedicated) -> ImpersonateCommand.register(dispatcher));
         ImpersonateGamerules.init();
     }
 

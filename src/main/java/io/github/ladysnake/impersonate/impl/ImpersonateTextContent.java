@@ -21,33 +21,34 @@ import io.github.ladysnake.impersonate.Impersonator;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.StringVisitable;
+import net.minecraft.text.Style;
+import net.minecraft.text.TextContent;
 
-public class ImpersonateText extends LiteralText implements RecipientAwareText {
+import java.util.Optional;
+
+public class ImpersonateTextContent implements TextContent {
     private final String trueText;
     private final String fakedText;
     private boolean revealed;
 
-    public static Text get(PlayerEntity player) {
+    public static TextContent get(PlayerEntity player) {
         return get(player, false);
     }
 
-    public static Text get(PlayerEntity player, boolean reveal) {
+    public static TextContent get(PlayerEntity player, boolean reveal) {
         Impersonator impersonator = Impersonator.get(player);
         String fakeName = impersonator.getEditedProfile().getName();
         String trueText = String.format("%s(%s)", fakeName, player.getGameProfile().getName());
-        return new ImpersonateText(trueText, fakeName, reveal);
+        return new ImpersonateTextContent(trueText, fakeName, reveal);
     }
 
-    private ImpersonateText(String trueText, String fakedText, boolean revealed) {
-        super(fakedText);
+    private ImpersonateTextContent(String trueText, String fakedText, boolean revealed) {
         this.trueText = trueText;
         this.fakedText = fakedText;
         this.revealed = revealed;
     }
 
-    @Override
     public void impersonateResolve(CommandOutput recipient) {
         revealed = !(recipient instanceof PlayerEntity) || shouldBeRevealedBy((PlayerEntity) recipient);
     }
@@ -59,18 +60,17 @@ public class ImpersonateText extends LiteralText implements RecipientAwareText {
     }
 
     @Override
-    public String asString() {
-        return this.getRawString();
+    public <T> Optional<T> visit(StringVisitable.StyledVisitor<T> visitor, Style style) {
+        return visitor.accept(style, this.getString());
     }
 
     @Override
-    public String getRawString() {
+    public <T> Optional<T> visit(StringVisitable.Visitor<T> visitor) {
+        return visitor.accept(this.getString());
+    }
+
+    public String getString() {
         return this.revealed ? this.trueText : this.fakedText;
-    }
-
-    @Override
-    public ImpersonateText copy() {
-        return new ImpersonateText(this.trueText, this.fakedText, this.revealed);
     }
 
 }

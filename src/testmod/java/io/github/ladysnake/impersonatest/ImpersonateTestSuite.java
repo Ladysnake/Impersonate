@@ -31,7 +31,7 @@ import net.minecraft.util.Identifier;
 import java.util.UUID;
 
 public class ImpersonateTestSuite implements FabricGameTest {
-    @GameTest(structureName = EMPTY_STRUCTURE)
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void nameChanges(TestContext ctx) {
         Identifier key = new Identifier("impersonatest", "key");
         GameProfile profile = new GameProfile(UUID.randomUUID(), "impersonator");
@@ -39,7 +39,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
         Text formerName = player.getDisplayName();
         Impersonator impersonator = player.getComponent(Impersonate.IMPERSONATION);
         impersonator.impersonate(key, profile);
-        GameTestUtil.assertTrue("Expected player to have name \"impersonator\", was %s".formatted(player.getDisplayName()), "impersonator".equals(player.getDisplayName().asString()));
+        GameTestUtil.assertTrue("Expected player to have name \"impersonator\", was %s".formatted(player.getDisplayName()), "impersonator".equals(player.getDisplayName().getString()));
         impersonator.stopImpersonation(key);
         GameTestUtil.assertTrue("Expected player to have name %s, was %s".formatted(formerName, player.getDisplayName()), formerName.equals(player.getDisplayName()));
         ctx.complete();

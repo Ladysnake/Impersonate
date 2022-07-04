@@ -19,12 +19,12 @@ package io.github.ladysnake.impersonate.impl.mixin;
 
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import net.minecraft.server.command.CommandOutput;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(TranslatableText.class)
+@Mixin(TranslatableTextContent.class)
 public abstract class TranslatableTextMixin implements RecipientAwareText {
     @Shadow
     @Final

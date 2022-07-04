@@ -27,7 +27,7 @@ import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -99,9 +99,9 @@ public final class ImpersonateCommand {
     private static void sendImpersonationFeedback(ServerCommandSource source, ServerPlayerEntity player, GameProfile impersonated, String message) {
         String name = impersonated.getName();
         if (source.getEntity() == player) {
-            source.sendFeedback(new TranslatableText("impersonate:commands.disguise." + message + ".success.self", name), true);
+            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + message + ".success.self", name), true);
         } else {
-            source.sendFeedback(new TranslatableText("impersonate:commands.disguise." + message + ".success.other", player.getDisplayName(), name), true);
+            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + message + ".success.other", player.getDisplayName(), name), true);
         }
     }
 

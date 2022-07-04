@@ -23,18 +23,12 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 
-import java.util.List;
-
 @Mixin(MutableText.class)
-public interface MutableTextMixin extends Text, RecipientAwareText {
+public abstract class MutableTextMixin implements Text, RecipientAwareText {
     @Override
-    default Text impersonateResolveAll(CommandOutput recipient) {
+    public Text impersonateResolveAll(CommandOutput recipient) {
         this.impersonateResolve(recipient);
-        List<Text> siblings = this.getSiblings();
-        for (int i = 0; i < siblings.size(); i++) {
-            Text sibling = siblings.get(i);
-            siblings.set(i, ((RecipientAwareText) sibling).impersonateResolveAll(recipient));
-        }
+        this.getSiblings().replaceAll(text -> ((RecipientAwareText) text).impersonateResolveAll(recipient));
         return this;
     }
 }

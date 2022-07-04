@@ -16,6 +16,7 @@
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "TextMixin",
+    "TextSerializerMixin",
     "ThreadedAnvilChunkStorageAccessor",
     "TranslatableTextMixin"
   ],

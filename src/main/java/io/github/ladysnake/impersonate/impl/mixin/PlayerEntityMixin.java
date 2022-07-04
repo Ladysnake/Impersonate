@@ -19,13 +19,14 @@ package io.github.ladysnake.impersonate.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
 import io.github.ladysnake.impersonate.Impersonator;
-import io.github.ladysnake.impersonate.impl.ImpersonateText;
+import io.github.ladysnake.impersonate.impl.ImpersonateTextContent;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -82,7 +83,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         PlayerEntity self = ((PlayerEntity) (Object) this);
         if (Impersonator.get(self).isImpersonating()) {
             // if the client is aware that there is an impersonation, they should display it
-            cir.setReturnValue(ImpersonateText.get(self, world.isClient));
+            cir.setReturnValue(MutableText.of(ImpersonateTextContent.get(self, world.isClient)));
         }
     }
 }

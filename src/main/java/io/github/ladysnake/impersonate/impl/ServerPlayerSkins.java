@@ -53,6 +53,7 @@ import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -106,8 +107,9 @@ public final class ServerPlayerSkins {
 
     /**
      * Sets the skin to the specified player and reloads it with {@link #reloadSkin(ServerPlayerEntity)}
-     * @param player player whose skin needs to be changed
-     * @param value skin texture value
+     *
+     * @param player    player whose skin needs to be changed
+     * @param value     skin texture value
      * @param signature skin texture signature
      */
     private static void setPlayerSkin(ServerPlayerEntity player, @Nullable String value, @Nullable String signature) {
@@ -127,10 +129,11 @@ public final class ServerPlayerSkins {
 
     /**
      * Reloads player's skin for all the players (including the one that has changed the skin)
+     *
      * @param player player that wants to have the skin reloaded
      */
     private static void reloadSkin(ServerPlayerEntity player) {
-        for(ServerPlayerEntity other : Objects.requireNonNull(player.getServer()).getPlayerManager().getPlayerList()) {
+        for (ServerPlayerEntity other : Objects.requireNonNull(player.getServer()).getPlayerManager().getPlayerList()) {
             // Refreshing tablist for each player
             other.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.REMOVE_PLAYER, player));
             other.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, player));
@@ -138,7 +141,7 @@ public final class ServerPlayerSkins {
 
         ChunkManager manager = player.world.getChunkManager();
         assert manager instanceof ServerChunkManager;
-        ThreadedAnvilChunkStorage storage = ((ServerChunkManager)manager).threadedAnvilChunkStorage;
+        ThreadedAnvilChunkStorage storage = ((ServerChunkManager) manager).threadedAnvilChunkStorage;
         EntityTrackerAccessor trackerEntry = ((ThreadedAnvilChunkStorageAccessor) storage).getEntityTrackers().get(player.getId());
 
         for (ServerPlayerEntity tracking : PlayerLookup.tracking(player)) {
@@ -155,7 +158,17 @@ public final class ServerPlayerSkins {
     private static void reloadSkinVanilla(ServerPlayerEntity player) {
         // need to change the player entity on the client
         ServerWorld targetWorld = (ServerWorld) player.world;
-        player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(targetWorld.method_40134(), targetWorld.getRegistryKey(), BiomeAccess.hashSeed(targetWorld.getSeed()), player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(), targetWorld.isDebugWorld(), targetWorld.isFlat(), true));
+        player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(
+            targetWorld.getDimensionKey(),
+            targetWorld.getRegistryKey(),
+            BiomeAccess.hashSeed(targetWorld.getSeed()),
+            player.interactionManager.getGameMode(),
+            player.interactionManager.getPreviousGameMode(),
+            targetWorld.isDebugWorld(),
+            targetWorld.isFlat(),
+            true,
+            player.getLastDeathPos()
+        ));
         player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
         player.server.getPlayerManager().sendCommandTree(player);
         player.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(player.experienceProgress, player.totalExperience, player.experienceLevel));

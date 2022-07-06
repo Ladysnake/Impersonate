@@ -38,8 +38,7 @@ dependencies {
     modIncludeImplementation libs.fpa
     modIncludeApi libs.cca.base
     modIncludeImplementation libs.cca.entity
-    modCompileOnly compatLibs.illuminations
-    modRuntimeOnly compatLibs.illuminations
+    modLocalImplementation compatLibs.illuminations
     modLocalImplementation libs.elmendorf
 
     api "org.jetbrains:annotations:${jb_annotations_version}"

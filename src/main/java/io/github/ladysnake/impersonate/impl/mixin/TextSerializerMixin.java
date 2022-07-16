@@ -40,7 +40,7 @@ public class TextSerializerMixin {
         cancellable = true
     )
     private void serializeImpersonateTexts(Text text, Type type, JsonSerializationContext jsonSerializationContext, CallbackInfoReturnable<JsonElement> cir, JsonObject jsonObject, TextContent textContent) {
-        if (text instanceof ImpersonateTextContent cnt) {
+        if (textContent instanceof ImpersonateTextContent cnt) {
             jsonObject.addProperty("text", cnt.getString());
             cir.setReturnValue(jsonObject);
         }

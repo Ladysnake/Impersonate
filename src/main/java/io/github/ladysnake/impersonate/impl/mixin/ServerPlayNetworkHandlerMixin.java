@@ -37,12 +37,12 @@ public abstract class ServerPlayNetworkHandlerMixin {
     @Shadow
     public ServerPlayerEntity player;
 
-    @ModifyArg(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V"))
+    @ModifyArg(method = "sendPacket(Lnet/minecraft/network/Packet;Lnet/minecraft/class_7648;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/Packet;Lnet/minecraft/class_7648;)V"))
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
         if (packet instanceof GameMessageS2CPacket gamePacket) {
             if (this.existsImpersonator()) {
                 Text resolvedText = ((RecipientAwareText) gamePacket.content()).impersonateResolveAll(player);
-                return new GameMessageS2CPacket(resolvedText, gamePacket.typeId());
+                return new GameMessageS2CPacket(resolvedText, gamePacket.overlay());
             }
         } else if (packet instanceof PlayerListS2CPacket listPacket) {
             if (this.existsImpersonator()) {

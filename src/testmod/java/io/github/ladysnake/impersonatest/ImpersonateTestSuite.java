@@ -18,6 +18,7 @@
 package io.github.ladysnake.impersonatest;
 
 import com.mojang.authlib.GameProfile;
+import io.github.ladysnake.elmendorf.ElmendorfTestContext;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
@@ -35,7 +36,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
     public void nameChanges(TestContext ctx) {
         Identifier key = new Identifier("impersonatest", "key");
         GameProfile profile = new GameProfile(UUID.randomUUID(), "impersonator");
-        ServerPlayerEntity player = ctx.spawnServerPlayer(1, 0, 1);
+        ServerPlayerEntity player = ((ElmendorfTestContext)ctx).spawnServerPlayer(1, 0, 1);
         Text formerName = player.getDisplayName();
         Impersonator impersonator = player.getComponent(Impersonate.IMPERSONATION);
         impersonator.impersonate(key, profile);

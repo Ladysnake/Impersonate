@@ -38,7 +38,9 @@ dependencies {
     modIncludeImplementation libs.fpa
     modIncludeApi libs.cca.base
     modIncludeImplementation libs.cca.entity
-    modLocalImplementation compatLibs.illuminations
+    modLocalImplementation (compatLibs.illuminations) {
+        exclude group: 'me.shedaniel.cloth'
+    }
     modLocalImplementation libs.elmendorf
 
     api "org.jetbrains:annotations:${jb_annotations_version}"
@@ -73,7 +75,7 @@ task testmodJar(type: Jar, dependsOn: testmodClasses) {
 
 task remapTestmodJar(type: RemapJarTask, dependsOn: project.testmodJar) {
     archiveBaseName = 'ImpersonateTest'
-    input = testmodJar.archiveFile
+    inputFile = testmodJar.archiveFile
     addNestedDependencies = false
 }
 

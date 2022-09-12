@@ -18,7 +18,7 @@
     "TextMixin",
     "TextSerializerMixin",
     "ThreadedAnvilChunkStorageAccessor",
-    "TranslatableTextMixin"
+    "TranslatableTextContentMixin"
   ],
   "injectors": {
     "defaultRequire": 1

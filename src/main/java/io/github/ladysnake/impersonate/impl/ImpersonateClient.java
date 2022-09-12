@@ -26,7 +26,7 @@ public final class ImpersonateClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(ServerPlayerSkins.RELOAD_SKIN_PACKET, (client, handler, buf, responseSender) -> client.execute(() -> {
             assert client.player != null;
-            ((AbstractClientPlayerEntityAccessor) client.player).setCachedScoreboardEntry(null);
+            ((AbstractClientPlayerEntityAccessor) client.player).setPlayerListEntry(null);
         }));
     }
 }

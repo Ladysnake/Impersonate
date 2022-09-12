@@ -17,13 +17,11 @@
  */
 package io.github.ladysnake.impersonate.impl.mixin;
 
-import io.github.ladysnake.impersonate.impl.ImpersonateTextContent;
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -40,16 +38,6 @@ public interface TextMixin extends RecipientAwareText {
 
     @Shadow
     Style getStyle();
-
-    @Shadow
-    TextContent getContent();
-
-    @Override
-    default void impersonateResolve(CommandOutput recipient) {
-        if (this.getContent() instanceof ImpersonateTextContent txt) {
-            txt.impersonateResolve(recipient);
-        }
-    }
 
     @Override
     default Text impersonateResolveAll(CommandOutput recipient) {

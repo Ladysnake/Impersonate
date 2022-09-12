@@ -18,14 +18,8 @@
 package io.github.ladysnake.impersonate.impl;
 
 import net.minecraft.server.command.CommandOutput;
-import net.minecraft.text.Text;
+import net.minecraft.text.TextContent;
 
-public interface RecipientAwareText {
-    default void impersonateResolve(CommandOutput recipient) {
-        if (((Text) this).getContent() instanceof RecipientAwareTextContent txt) {
-            txt.impersonateResolve(recipient);
-        }
-    }
-
-    Text impersonateResolveAll(CommandOutput recipient);
+public interface RecipientAwareTextContent extends TextContent {
+    void impersonateResolve(CommandOutput recipient);
 }

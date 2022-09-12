@@ -1,5 +1,5 @@
 [versions]
-illuminations = "3846131"
+illuminations = "1.10.9"
 
 [libraries]
-illuminations = { module = "curse.maven:illuminations-292908", version.ref = "illuminations" }
+illuminations = { module = "io.github.ladysnake:Illuminations", version.ref = "illuminations" }

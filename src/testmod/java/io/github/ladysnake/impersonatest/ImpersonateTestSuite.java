@@ -22,11 +22,13 @@ import io.github.ladysnake.elmendorf.ElmendorfTestContext;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
+import io.github.ladysnake.impersonate.impl.ImpersonateTextContent;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
 
 import java.util.UUID;
@@ -36,13 +38,22 @@ public class ImpersonateTestSuite implements FabricGameTest {
     public void nameChanges(TestContext ctx) {
         Identifier key = new Identifier("impersonatest", "key");
         GameProfile profile = new GameProfile(UUID.randomUUID(), "impersonator");
-        ServerPlayerEntity player = ((ElmendorfTestContext)ctx).spawnServerPlayer(1, 0, 1);
+        ServerPlayerEntity player = ((ElmendorfTestContext) ctx).spawnServerPlayer(1, 0, 1);
         Text formerName = player.getDisplayName();
         Impersonator impersonator = player.getComponent(Impersonate.IMPERSONATION);
         impersonator.impersonate(key, profile);
         GameTestUtil.assertTrue("Expected player to have name \"impersonator\", was %s".formatted(player.getDisplayName()), "impersonator".equals(player.getDisplayName().getString()));
         impersonator.stopImpersonation(key);
         GameTestUtil.assertTrue("Expected player to have name %s, was %s".formatted(formerName, player.getDisplayName()), formerName.equals(player.getDisplayName()));
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void nameGetsRevealed(TestContext ctx) {
+        ServerPlayerEntity player = ((ElmendorfTestContext) ctx).spawnServerPlayer(1, 0, 1);
+        TextContent textContent = ImpersonateTextContent.get(player);
+        ctx.getWorld().getServer().sendMessage(Text.translatable("a", textContent));
+        GameTestUtil.assertTrue("Text content should be revealed", ((ImpersonateTextContent) textContent).isRevealed());
         ctx.complete();
     }
 }

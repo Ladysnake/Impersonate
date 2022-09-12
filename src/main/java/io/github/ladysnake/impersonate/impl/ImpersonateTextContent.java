@@ -27,7 +27,7 @@ import net.minecraft.text.TextContent;
 
 import java.util.Optional;
 
-public class ImpersonateTextContent implements TextContent {
+public class ImpersonateTextContent implements RecipientAwareTextContent {
     private final String trueText;
     private final String fakedText;
     private boolean revealed;
@@ -49,8 +49,13 @@ public class ImpersonateTextContent implements TextContent {
         this.revealed = revealed;
     }
 
+    @Override
     public void impersonateResolve(CommandOutput recipient) {
-        revealed = !(recipient instanceof PlayerEntity) || shouldBeRevealedBy((PlayerEntity) recipient);
+        revealed = !(recipient instanceof PlayerEntity player) || shouldBeRevealedBy(player);
+    }
+
+    public boolean isRevealed() {
+        return revealed;
     }
 
     public static boolean shouldBeRevealedBy(PlayerEntity player) {

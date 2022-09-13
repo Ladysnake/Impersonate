@@ -75,6 +75,17 @@ public interface Impersonator extends Component {
     @Nullable GameProfile getImpersonatedProfile();
 
     /**
+     * Returns the profile impersonated with the given {@code key}.
+     *
+     * <p>The returned profile may not be the same as that returned by {@link #getImpersonatedProfile()},
+     * especially if several impersonations are ongoing.
+     *
+     * @param key the key identifying the source of the impersonation
+     * @return the game profile that is being impersonated under that impersonation key
+     */
+    @Nullable GameProfile getImpersonatedProfile(@NotNull Identifier key);
+
+    /**
      * Returns the player's actual {@link GameProfile}, disregarding any impersonation.
      *
      * @return the player's actual profile

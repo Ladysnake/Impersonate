@@ -1,6 +1,10 @@
 {
   "impersonate:commands.disguise.clear.success.other": "%s stopped impersonating %s",
   "impersonate:commands.disguise.clear.success.self": "Stopped impersonating %s",
+  "impersonate:commands.disguise.query.no_one.success.other": "%s is not impersonating anyone",
+  "impersonate:commands.disguise.query.no_one.success.self": "Not impersonating anyone",
+  "impersonate:commands.disguise.query.success.other": "%s is impersonating %s",
+  "impersonate:commands.disguise.query.success.self": "Impersonating %s",
   "impersonate:commands.disguise.start.success.other": "%s started impersonating %s",
   "impersonate:commands.disguise.start.success.self": "Started impersonating %s",
   "gamerule.impersonate:fakeCapes": "Copy impersonated players' capes",

@@ -45,9 +45,8 @@ public final class ImpersonateCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("impersonate")
             // Require perms at the root to avoid showing empty "/impersonate" command to regular players
-            .requires(Permissions.require("impersonate.command.disguise.self", 2))
+            .requires(Permissions.require("impersonate.command.query.self", 2))
             .then(literal("disguise")
-                // Require perms again in case we add more subcommands in the future
                 .requires(Permissions.require("impersonate.command.disguise.self", 2))
                 .then(literal("as")
                     .then(argument("disguise", GameProfileArgumentType.gameProfile())
@@ -73,8 +72,35 @@ public final class ImpersonateCommand {
                         )
                     )
                 )
+                .then(literal("query")
+                    .requires(Permissions.require("impersonate.command.disguise.query.self", 2))
+                    .executes(context -> queryImpersonation(context.getSource(), context.getSource().getPlayer(), null))
+                    .then(argument("target", EntityArgumentType.player())
+                        .requires(Permissions.require("impersonate.command.disguise.query", 2))
+                        .executes(context -> queryImpersonation(context.getSource(), EntityArgumentType.getPlayer(context, "target"), null))
+                        .then(argument("key", IdentifierArgumentType.identifier())
+                            .executes(context -> queryImpersonation(context.getSource(), EntityArgumentType.getPlayer(context, "target"), IdentifierArgumentType.getIdentifier(context, "key")))
+                        )
+                    )
+                )
             )
         );
+    }
+
+    private static int queryImpersonation(ServerCommandSource source, ServerPlayerEntity player, @Nullable Identifier key) {
+        GameProfile profile;
+        if (key == null) {
+            profile = Impersonator.get(player).getImpersonatedProfile();
+        } else {
+            profile = Impersonator.get(player).getImpersonatedProfile(key);
+        }
+        sendImpersonationFeedback(source, player, profile == null
+            ? "query.no_one"
+            : "query",
+            profile == null
+            ? ""
+            : profile.getName());
+        return profile == null ? 1 : 0;
     }
 
     private static int stopImpersonation(ServerCommandSource source, Collection<ServerPlayerEntity> players, @Nullable Identifier key) {
@@ -89,19 +115,18 @@ public final class ImpersonateCommand {
                 impersonated = impersonator.stopImpersonation(key);
             }
             if (impersonated != null) {
-                sendImpersonationFeedback(source, player, impersonated, "clear");
+                sendImpersonationFeedback(source, player, "clear", impersonated.getName());
                 ++count;
             }
         }
         return count;
     }
 
-    private static void sendImpersonationFeedback(ServerCommandSource source, ServerPlayerEntity player, GameProfile impersonated, String message) {
-        String name = impersonated.getName();
+    private static void sendImpersonationFeedback(ServerCommandSource source, ServerPlayerEntity player, String command, Object arg) {
         if (source.getEntity() == player) {
-            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + message + ".success.self", name), true);
+            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + command + ".success.self", arg), true);
         } else {
-            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + message + ".success.other", player.getDisplayName(), name), true);
+            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + command + ".success.other", player.getDisplayName(), arg), true);
         }
     }
 
@@ -116,7 +141,7 @@ public final class ImpersonateCommand {
         stopImpersonation(source, players, impersonationKey);
         for (ServerPlayerEntity player : players) {
             Impersonator.get(player).impersonate(impersonationKey, disguise);
-            sendImpersonationFeedback(source, player, disguise, "start");
+            sendImpersonationFeedback(source, player, "start", disguise.getName());
             ++count;
         }
         return count;

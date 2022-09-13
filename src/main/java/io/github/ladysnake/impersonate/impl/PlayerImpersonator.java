@@ -149,6 +149,11 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     @Override
+    public @Nullable GameProfile getImpersonatedProfile(@NotNull Identifier key) {
+        return this.stackedImpersonations.get(key);
+    }
+
+    @Override
     public @NotNull GameProfile getActualProfile() {
         return ((PlayerEntityExtensions) this.player).impersonate_getActualGameProfile();
     }

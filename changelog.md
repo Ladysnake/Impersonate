@@ -1,4 +1,10 @@
 ------------------------------------------------------
+Version 2.8.0
+------------------------------------------------------
+- Added the `/impersonate disguise query` subcommand to query a player's disguise
+- Actually fixed impersonations not being revealed to operators and server logs
+
+------------------------------------------------------
 Version 2.7.1
 ------------------------------------------------------
 - Fixed impersonations not being revealed to operators and server logs

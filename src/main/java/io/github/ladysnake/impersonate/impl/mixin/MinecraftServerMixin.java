@@ -19,6 +19,7 @@ package io.github.ladysnake.impersonate.impl.mixin;
 
 import io.github.ladysnake.impersonate.impl.ImpersonateGamerules;
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.world.ServerWorld;
@@ -26,6 +27,7 @@ import net.minecraft.text.Text;
 import net.minecraft.world.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
@@ -39,6 +41,21 @@ public abstract class MinecraftServerMixin implements CommandOutput {
 
     @ModifyVariable(method = "sendMessage", at = @At("HEAD"), argsOnly = true)
     private Text revealImpersonatorsInMessages(Text message) {
+        return impersonate$reveal(message);
+    }
+
+    @ModifyVariable(method = "logChatMessage", at = @At("HEAD"), argsOnly = true)
+    private Text revealImpersonatorsInChatMessageContent(Text messageContent) {
+        return impersonate$reveal(messageContent);
+    }
+
+    @ModifyVariable(method = "logChatMessage", at = @At("HEAD"), argsOnly = true)
+    private MessageType.Parameters revealImpersonatorsInChatMessageContent(MessageType.Parameters params) {
+        return new MessageType.Parameters(params.type(), impersonate$reveal(params.name()), params.targetName() == null ? null : impersonate$reveal(params.targetName()));
+    }
+
+    @Unique
+    private Text impersonate$reveal(Text message) {
         if (this.getOverworld() == null || this.getGameRules().getBoolean(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
             return ((RecipientAwareText) message).impersonateResolveAll(this);
         }

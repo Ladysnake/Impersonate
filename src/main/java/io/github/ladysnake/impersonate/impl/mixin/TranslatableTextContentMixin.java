@@ -17,6 +17,7 @@
  */
 package io.github.ladysnake.impersonate.impl.mixin;
 
+import io.github.ladysnake.impersonate.impl.RecipientAwareText;
 import io.github.ladysnake.impersonate.impl.RecipientAwareTextContent;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.text.TranslatableTextContent;
@@ -32,7 +33,7 @@ public abstract class TranslatableTextContentMixin implements RecipientAwareText
     @Override
     public void impersonateResolve(CommandOutput recipient) {
         for (Object arg : this.getArgs()) {
-            if (arg instanceof RecipientAwareTextContent txt) {
+            if (arg instanceof RecipientAwareText txt) {
                 txt.impersonateResolve(recipient);
             }
         }

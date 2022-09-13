@@ -24,10 +24,17 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.message.DecoratedContents;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SignedMessage;
+import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 public final class PacketMeddling {
@@ -58,5 +65,36 @@ public final class PacketMeddling {
         } finally {
             buf.release();
         }
+    }
+
+    public static ChatMessageS2CPacket resolveChatMessage(ChatMessageS2CPacket chatPacket, ServerPlayerEntity player) {
+        Optional<Text> unsignedContent = chatPacket.message().unsignedContent().map(t -> ((RecipientAwareText) t).impersonateResolveAll(player));
+        Text signedContent = chatPacket.message().signedBody().content().decorated();
+        Text name = ((RecipientAwareText) chatPacket.serializedParameters().name()).impersonateResolveAll(player);
+        @Nullable Text targetName = chatPacket.serializedParameters().targetName() instanceof RecipientAwareText t
+            ? t.impersonateResolveAll(player)
+            : null;
+
+        // God, I wish we had a Record#copy method in this language
+        // And yes we need to do a deep copy at the end, to avoid sharing text references
+        return copyPacket(new ChatMessageS2CPacket(
+            new SignedMessage(
+                chatPacket.message().signedHeader(),
+                chatPacket.message().headerSignature(),
+                chatPacket.message().signedBody().withContent(
+                    new DecoratedContents(
+                        chatPacket.message().signedBody().content().plain(),
+                        signedContent
+                    )
+                ),
+                unsignedContent,
+                chatPacket.message().filterMask()
+            ),
+            new MessageType.Serialized(
+                chatPacket.serializedParameters().typeId(),
+                name,
+                targetName
+            )
+        ), ChatMessageS2CPacket::new);
     }
 }

@@ -78,4 +78,8 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
         return this.revealed ? this.trueText : this.fakedText;
     }
 
+    @Override
+    public String toString() {
+        return "impersonate:literal{" + this.fakedText + "/" + this.trueText + ", revealed=" + this.revealed + "}";
+    }
 }

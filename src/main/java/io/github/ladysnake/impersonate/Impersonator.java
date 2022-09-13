@@ -82,6 +82,7 @@ public interface Impersonator extends Component {
      *
      * @param key the key identifying the source of the impersonation
      * @return the game profile that is being impersonated under that impersonation key
+     * @since 1.8.0
      */
     @Nullable GameProfile getImpersonatedProfile(@NotNull Identifier key);
 

@@ -3,6 +3,10 @@
   "impersonate:commands.disguise.clear.success.self": "已停止冒充 %s",
   "impersonate:commands.disguise.start.success.other": "%s 已开始冒充 %s",
   "impersonate:commands.disguise.start.success.self": "已开始冒充 %s",
+  "impersonate:commands.disguise.query.no_one.success.other": "%s不在冒充任何人",
+  "impersonate:commands.disguise.query.no_one.success.self": "你不在冒充任何人",
+  "impersonate:commands.disguise.query.success.other": "%s正在冒充%s",
+  "impersonate:commands.disguise.query.success.self": "你正在冒充%s",
   "gamerule.impersonate:fakeCapes": "复制被冒充的玩家的披风",
   "gamerule.impersonate:logRevealImpersonations": "在服务器日志中显示正在进行的冒充行为",
   "gamerule.impersonate:opRevealImpersonations": "向op显示正在进行的冒充行为"

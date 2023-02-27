@@ -1,4 +1,10 @@
 ------------------------------------------------------
+Version 2.9.0
+------------------------------------------------------
+Updated to MC 1.19.3
+- Fixed the compatibility with LuckPerms
+
+------------------------------------------------------
 Version 2.8.0
 ------------------------------------------------------
 - Added the `/impersonate disguise query` subcommand to query a player's disguise

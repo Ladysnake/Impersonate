@@ -1,6 +1,6 @@
 /*
  * Impersonate
- * Copyright (C) 2020-2022 Ladysnake
+ * Copyright (C) 2020-2023 Ladysnake
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,8 @@
 package io.github.ladysnake.impersonate.impl.mixin;
 
 import net.minecraft.server.network.EntityTrackerEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-
-import java.util.Set;
 
 @Mixin(targets = "net.minecraft.server.world.ThreadedAnvilChunkStorage$EntityTracker")
 public interface EntityTrackerAccessor {

@@ -45,10 +45,10 @@ public final class ImpersonateCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("impersonate")
             // Require perms at the root to avoid showing empty "/impersonate" command to regular players
-            .requires(Permissions.require("impersonate.command.query.self", 2))
+            .requires(Permissions.require("impersonate.command.disguise.query.self", 2))
             .then(literal("disguise")
-                .requires(Permissions.require("impersonate.command.disguise.self", 2))
                 .then(literal("as")
+                    .requires(Permissions.require("impersonate.command.disguise.self", 2))
                     .then(argument("disguise", GameProfileArgumentType.gameProfile())
                         .executes(context -> startImpersonation(context.getSource(), GameProfileArgumentType.getProfileArgument(context, "disguise"), Collections.singleton(context.getSource().getPlayer()), DEFAULT_IMPERSONATION_KEY))
                         .then(argument("targets", EntityArgumentType.players())
@@ -62,6 +62,7 @@ public final class ImpersonateCommand {
                     )
                 )
                 .then(literal("clear")
+                    .requires(Permissions.require("impersonate.command.disguise.self", 2))
                     .executes(context -> stopImpersonation(context.getSource(), Collections.singleton(context.getSource().getPlayer()), null))
                     .then(argument("targets", EntityArgumentType.players())
                         // Require another permission for disguising other people

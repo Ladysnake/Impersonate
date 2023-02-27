@@ -1,6 +1,6 @@
 [versions]
 cca = "5.1.0"
-fpa = "0.1-SNAPSHOT"
+fpa = "0.2-SNAPSHOT"
 elmendorf = "0.9.1"
 
 [libraries]

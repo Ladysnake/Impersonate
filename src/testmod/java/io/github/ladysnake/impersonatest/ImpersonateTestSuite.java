@@ -18,7 +18,6 @@
 package io.github.ladysnake.impersonatest;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.elmendorf.ElmendorfTestContext;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.elmendorf.impl.MockClientConnection;
 import io.github.ladysnake.impersonate.Impersonate;
@@ -26,14 +25,11 @@ import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.ImpersonateTextContent;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.encryption.NetworkEncryptionException;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.network.encryption.Signer;
-import net.minecraft.network.message.DecoratedContents;
 import net.minecraft.network.message.LastSeenMessageList;
+import net.minecraft.network.message.MessageBody;
 import net.minecraft.network.message.MessageChain;
-import net.minecraft.network.message.MessageMetadata;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
@@ -47,9 +43,10 @@ import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
 
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
+import java.util.BitSet;
 import java.util.UUID;
 
 public class ImpersonateTestSuite implements FabricGameTest {
@@ -59,7 +56,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void nameChanges(TestContext ctx) {
         GameProfile profile = new GameProfile(UUID.randomUUID(), "impersonated");
-        ServerPlayerEntity player = ((ElmendorfTestContext) ctx).spawnServerPlayer(1, 0, 1);
+        ServerPlayerEntity player = ctx.spawnServerPlayer(1, 0, 1);
         Text formerName = player.getDisplayName();
         Impersonator impersonator = player.getComponent(Impersonate.IMPERSONATION);
         impersonator.impersonate(IMPERSONATION_KEY, profile);
@@ -71,7 +68,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
 
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void nameGetsRevealed(TestContext ctx) {
-        ServerPlayerEntity player = ((ElmendorfTestContext) ctx).spawnServerPlayer(1, 0, 1);
+        ServerPlayerEntity player = ctx.spawnServerPlayer(1, 0, 1);
         TextContent textContent = ImpersonateTextContent.get(player);
         ctx.getWorld().getServer().sendMessage(Text.translatable("a", MutableText.of(textContent)));
         GameTestUtil.assertTrue("Text content should be revealed", ((ImpersonateTextContent) textContent).isRevealed());
@@ -79,23 +76,19 @@ public class ImpersonateTestSuite implements FabricGameTest {
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
-    public void nameInChatGetsRevealed(TestContext ctx) throws NetworkEncryptionException {
+    public void nameInChatGetsRevealed(TestContext ctx) throws NoSuchAlgorithmException {
         // Do the bare minimum to simulate a legit client with a valid keypair
-        KeyPair keyPair = NetworkEncryptionUtils.generateServerKeyPair();
+        UUID senderUuid = UUID.randomUUID();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
         Signer signer = Signer.create(keyPair.getPrivate(), "SHA256withRSA");
-        MessageChain.Packer messagePacker = new MessageChain().getPacker();
+        MessageChain.Packer messagePacker = new MessageChain(senderUuid, UUID.randomUUID()).getPacker(signer);
         LastSeenMessageList lastSeenMessages = LastSeenMessageList.EMPTY;
         ServerPlayerEntity player = new ServerPlayerEntity(
             ctx.getWorld().getServer(),
             ctx.getWorld(),
-            new GameProfile(UUID.randomUUID(), "test-mock-player"),
-            new PlayerPublicKey(
-                new PlayerPublicKey.PublicKeyData(
-                    Instant.now().plus(42, ChronoUnit.HALF_DAYS),
-                    keyPair.getPublic(),
-                    new byte[0] // this would absolutely be thrown out if the player logged in, but we aren't doing that
-                )
-            )
+            new GameProfile(senderUuid, "test-mock-player")
         );
         player.networkHandler = new ServerPlayNetworkHandler(
             ctx.getWorld().getServer(),
@@ -103,29 +96,29 @@ public class ImpersonateTestSuite implements FabricGameTest {
             player
         );
         Impersonator.get(player).impersonate(IMPERSONATION_KEY, new GameProfile(UUID.randomUUID(), "impersonated"));
-        DecoratedContents text = new DecoratedContents("Hi");
-        MessageMetadata metadata = MessageMetadata.of(player.getUuid());
+        String text = "Hi";
+        Instant timestamp = Instant.now();
+        long salt = NetworkEncryptionUtils.SecureRandomUtil.nextLong();
         PlayerManager playerManager = ctx.getWorld().getServer().getPlayerManager();
-        ServerPlayerEntity otherPlayer = ((ElmendorfTestContext) ctx).spawnServerPlayer(1, 0, 1);
+        ServerPlayerEntity otherPlayer = ctx.spawnServerPlayer(1, 0, 1);
 
         try {
             playerManager.getPlayerList().add(player);
             playerManager.getPlayerList().add(otherPlayer);
             playerManager.addToOperators(player.getGameProfile());
             player.networkHandler.onChatMessage(new ChatMessageC2SPacket(
-                text.plain(),
-                metadata.timestamp(),
-                metadata.salt(),
-                messagePacker.pack(signer, metadata, text, lastSeenMessages).signature(),
-                false,
-                new LastSeenMessageList.Acknowledgment(lastSeenMessages, Optional.empty())
+                text,
+                timestamp,
+                salt,
+                messagePacker.pack(new MessageBody(text, timestamp, salt, lastSeenMessages)),
+                new LastSeenMessageList.Acknowledgment(0, new BitSet())
             ));
-            ((ElmendorfTestContext) ctx).verifyConnection(player, conn -> conn.sent(
+            ctx.verifyConnection(player, conn -> conn.sent(
                 ChatMessageS2CPacket.class,
                 chatPacket -> chatPacket.serializedParameters().name().getString()
                     .equals("impersonated(test-mock-player)"))
             );
-            ((ElmendorfTestContext) ctx).verifyConnection(otherPlayer, conn -> conn.sent(
+            ctx.verifyConnection(otherPlayer, conn -> conn.sent(
                 ChatMessageS2CPacket.class,
                 chatPacket -> chatPacket.serializedParameters().name().getString()
                     .equals("impersonated"))

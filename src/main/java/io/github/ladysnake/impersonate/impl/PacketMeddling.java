@@ -24,9 +24,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.message.DecoratedContents;
 import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SignedMessage;
 import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -42,15 +40,16 @@ public final class PacketMeddling {
     public static void resolvePlayerListEntries(PlayerListS2CPacket packet, ServerPlayerEntity player) {
         boolean reveal = ImpersonateTextContent.shouldBeRevealedBy(player);
         for (PlayerListS2CPacket.Entry entry : packet.getEntries()) {
-            PlayerEntity playerEntry = player.server.getPlayerManager().getPlayer(entry.getProfile().getId());
+            PlayerEntity playerEntry = player.server.getPlayerManager().getPlayer(entry.profileId());
             if (playerEntry != null) {
                 Impersonator impersonator = Impersonate.IMPERSONATION.get(playerEntry);
                 if (impersonator.isImpersonating()) {
                     // OPs get the true profile with semi-fake display name, others get a complete lie
+                    PlayerListS2CPacketEntryAccessor accessibleEntry = (PlayerListS2CPacketEntryAccessor) (Object) entry;
                     if (reveal) {
-                        ((PlayerListS2CPacketEntryAccessor) entry).setDisplayName(MutableText.of(ImpersonateTextContent.get(playerEntry, true)));
+                        accessibleEntry.setDisplayName(MutableText.of(ImpersonateTextContent.get(playerEntry, true)));
                     } else {
-                        ((PlayerListS2CPacketEntryAccessor) entry).setProfile(impersonator.getEditedProfile());
+                        accessibleEntry.setProfile(impersonator.getEditedProfile());
                     }
                 }
             }
@@ -68,8 +67,7 @@ public final class PacketMeddling {
     }
 
     public static ChatMessageS2CPacket resolveChatMessage(ChatMessageS2CPacket chatPacket, ServerPlayerEntity player) {
-        Optional<Text> unsignedContent = chatPacket.message().unsignedContent().map(t -> ((RecipientAwareText) t).impersonateResolveAll(player));
-        Text signedContent = chatPacket.message().signedBody().content().decorated();
+        @Nullable Text unsignedContent = Optional.ofNullable(chatPacket.unsignedContent()).map(t -> ((RecipientAwareText) t).impersonateResolveAll(player)).orElse(null);
         Text name = ((RecipientAwareText) chatPacket.serializedParameters().name()).impersonateResolveAll(player);
         @Nullable Text targetName = chatPacket.serializedParameters().targetName() instanceof RecipientAwareText t
             ? t.impersonateResolveAll(player)
@@ -78,18 +76,12 @@ public final class PacketMeddling {
         // God, I wish we had a Record#copy method in this language
         // And yes we need to do a deep copy at the end, to avoid sharing text references
         return copyPacket(new ChatMessageS2CPacket(
-            new SignedMessage(
-                chatPacket.message().signedHeader(),
-                chatPacket.message().headerSignature(),
-                chatPacket.message().signedBody().withContent(
-                    new DecoratedContents(
-                        chatPacket.message().signedBody().content().plain(),
-                        signedContent
-                    )
-                ),
-                unsignedContent,
-                chatPacket.message().filterMask()
-            ),
+            chatPacket.sender(),
+            chatPacket.index(),
+            chatPacket.signature(),
+            chatPacket.body(),
+            unsignedContent,
+            chatPacket.filterMask(),
             new MessageType.Serialized(
                 chatPacket.serializedParameters().typeId(),
                 name,

@@ -1,7 +1,7 @@
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '1.+'
     id 'io.github.ladysnake.chenille' version '0.9.0'
     id 'io.github.juuxel.loom-quiltflower' version "1.6.0"
 }
@@ -38,7 +38,8 @@ dependencies {
     modIncludeImplementation libs.fpa
     modIncludeApi libs.cca.base
     modIncludeImplementation libs.cca.entity
-    modLocalImplementation (compatLibs.illuminations) {
+    // TODO make it work with effective once released
+    modCompileOnly (compatLibs.illuminations) {
         exclude group: 'me.shedaniel.cloth'
     }
     modLocalImplementation libs.elmendorf

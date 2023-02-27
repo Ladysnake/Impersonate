@@ -22,13 +22,16 @@ import dev.onyxstudios.cca.api.v3.component.CopyableComponent;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -36,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -88,14 +92,14 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
 
     private void setImpersonatedProfile(@Nullable GameProfile profile) {
         if (this.getImpersonatedProfile() != profile) {
-            updatePlayerLists(PlayerListS2CPacket.Action.REMOVE_PLAYER);
             this.impersonatedProfile = profile;
             this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
             if (this.player instanceof ServerPlayerEntity serverPlayer) {
+                updatePlayerLists(new PlayerRemoveS2CPacket(List.of(this.player.getUuid())));
                 this.applyCapeGamerule(serverPlayer, profile);
                 ServerPlayerSkins.setSkin(serverPlayer, profile == null ? this.getActualProfile() : profile);
+                updatePlayerLists(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, serverPlayer));
             }
-            updatePlayerLists(PlayerListS2CPacket.Action.ADD_PLAYER);
             Impersonate.IMPERSONATION.sync(this.player);
         }
     }
@@ -110,11 +114,11 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
         }
     }
 
-    private void updatePlayerLists(PlayerListS2CPacket.Action action) {
+    private void updatePlayerLists(Packet<ClientPlayPacketListener> packet) {
         if (!player.world.isClient) {
             PlayerManager playerManager = ((ServerPlayerEntity) player).server.getPlayerManager();
             if (isAloneOnServer(playerManager)) {
-                playerManager.sendToAll(new PlayerListS2CPacket(action, (ServerPlayerEntity) this.player));
+                playerManager.sendToAll(packet);
             }
         }
     }
@@ -208,9 +212,9 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
 
     @Override
     public void readFromNbt(@NotNull NbtCompound tag) {
-        if (tag.contains("impersonations", NbtType.LIST)) {
+        if (tag.contains("impersonations", NbtElement.LIST_TYPE)) {
             this.stopImpersonations();
-            NbtList impersonations = tag.getList("impersonations", NbtType.COMPOUND);
+            NbtList impersonations = tag.getList("impersonations", NbtElement.COMPOUND_TYPE);
             for (int i = 0; i < impersonations.size(); i++) {
                 NbtCompound nbtEntry = impersonations.getCompound(i);
                 Identifier key = Identifier.tryParse(nbtEntry.getString("impersonation_key"));

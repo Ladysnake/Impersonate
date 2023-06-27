@@ -20,7 +20,7 @@ package io.github.ladysnake.impersonate.impl.mixin;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.PacketMeddling;
 import io.github.ladysnake.impersonate.impl.RecipientAwareText;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
@@ -38,7 +38,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
     @Shadow
     public ServerPlayerEntity player;
 
-    @ModifyArg(method = "sendPacket(Lnet/minecraft/network/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/Packet;Lnet/minecraft/network/PacketCallbacks;)V"))
+    @ModifyArg(method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V"))
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
         if (packet instanceof ChatMessageS2CPacket chatPacket) {
             if (this.existsImpersonator()) {

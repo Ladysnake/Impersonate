@@ -51,8 +51,8 @@ public class ImpersonateMixinPlugin implements IMixinConfigPlugin {
     public List<String> getMixins() {
         List<String> additionalMixins = new ArrayList<>();
         FabricLoader loader = FabricLoader.getInstance();
-        if (loader.isModLoaded("illuminations")) {
-            additionalMixins.add("compat.IlluminationsMixin");
+        if (loader.isModLoaded("effective")) {
+            additionalMixins.add("compat.EffectiveCosmeticsMixin");
         }
         return additionalMixins;
     }

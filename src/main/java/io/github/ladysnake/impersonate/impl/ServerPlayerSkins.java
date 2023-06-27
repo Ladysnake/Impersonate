@@ -108,7 +108,7 @@ public final class ServerPlayerSkins {
             return Pair.of(null, null);
         });
         // we wait for the previous skin fetching to complete, to avoid setting skins in the wrong order
-        currentSkinTask.thenAcceptBothAsync(previousSkinTask, (pair, o) -> setPlayerSkin(player, pair.getFirst(), pair.getSecond()), player.world.getServer());
+        currentSkinTask.thenAcceptBothAsync(previousSkinTask, (pair, o) -> setPlayerSkin(player, pair.getFirst(), pair.getSecond()), player.getWorld().getServer());
     }
 
     /**
@@ -145,7 +145,7 @@ public final class ServerPlayerSkins {
             other.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, player));
         }
 
-        ChunkManager manager = player.world.getChunkManager();
+        ChunkManager manager = player.getWorld().getChunkManager();
         assert manager instanceof ServerChunkManager;
         ThreadedAnvilChunkStorage storage = ((ServerChunkManager) manager).threadedAnvilChunkStorage;
         EntityTrackerAccessor trackerEntry = ((ThreadedAnvilChunkStorageAccessor) storage).getEntityTrackers().get(player.getId());
@@ -163,7 +163,7 @@ public final class ServerPlayerSkins {
 
     private static void reloadSkinVanilla(ServerPlayerEntity player) {
         // need to change the player entity on the client
-        ServerWorld targetWorld = (ServerWorld) player.world;
+        ServerWorld targetWorld = (ServerWorld) player.getWorld();
         player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(
             targetWorld.getDimensionKey(),
             targetWorld.getRegistryKey(),
@@ -173,7 +173,8 @@ public final class ServerPlayerSkins {
             targetWorld.isDebugWorld(),
             targetWorld.isFlat(),
             PlayerRespawnS2CPacket.KEEP_ATTRIBUTES,
-            player.getLastDeathPos()
+            player.getLastDeathPos(),
+            player.getPortalCooldown()
         ));
         player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
         player.server.getPlayerManager().sendCommandTree(player);

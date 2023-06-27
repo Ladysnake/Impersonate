@@ -125,9 +125,9 @@ public final class ImpersonateCommand {
 
     private static void sendImpersonationFeedback(ServerCommandSource source, ServerPlayerEntity player, String command, Object arg) {
         if (source.getEntity() == player) {
-            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + command + ".success.self", arg), true);
+            source.sendFeedback(() -> Text.translatable("impersonate:commands.disguise." + command + ".success.self", arg), true);
         } else {
-            source.sendFeedback(Text.translatable("impersonate:commands.disguise." + command + ".success.other", player.getDisplayName(), arg), true);
+            source.sendFeedback(() -> Text.translatable("impersonate:commands.disguise." + command + ".success.other", player.getDisplayName(), arg), true);
         }
     }
 

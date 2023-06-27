@@ -1,3 +1,9 @@
+## **The Ladysnake maven is moving!**
+
+**As Jfrog is ending their free service for OSS projects, we have to move the maven repository before the 1st of July 2023.
+See below for the new maven instructions - you will have to update your buildscripts with the new URL before the cutoff date to avoid dependency resolution failures.**
+
+
 # Impersonate
 
 [![Curseforge](https://curse.nikky.moe/api/img/360333?logo)](https://www.curseforge.com/projects/360333) [![](https://jitpack.io/v/Ladysnake/Impersonate.svg)](https://jitpack.io/#Ladysnake/Impersonate)
@@ -43,7 +49,7 @@ If you only grant `impersonate.command.disguise.self`, players will only be able
 
 ### Gamerules
 - `impersonate:fakeCapes` : Whether impersonators should get the cape and elytra of impersonated players. Defaults to `false`.  
-  - If [Illuminations](https://github.com/Ladysnake/Illuminations) is installed, this option also controls whether a player's cosmetics are mimicked during impersonation
+  - If [Effective](https://github.com/Ladysnake/Effective) is installed, this option also controls whether a player's cosmetics are mimicked during impersonation
 - `impersonate:opRevealImpersonations` : Whether ongoing impersonations should be revealed to online server operators. Defaults to `true`.  
 - `impersonate:logRevealImpersonations` : Whether ongoing impersonations should be revealed in the server logs. Defaults to `true`.  
 
@@ -51,16 +57,19 @@ If you only grant `impersonate.command.disguise.self`, players will only be able
 
 You can add the library by inserting the following in your `build.gradle` :
 
-**Note: since MC 1.17 builds, the Impersonate dependency must be lowercase.**
+**Note 1: since MC 1.17 builds, the Impersonate dependency must be lowercase.**
+**Note 2: since MC 1.20.1 builds (1.14.0), the maven group changed from `io.github.ladysnake` to `org.ladysnake`.**  
+**Note 3: since June 2023, the maven url changed from `ladysnake.jfrog.io/artifactory/mods` to `maven.ladysnake.org/releases`.**
 
 ```gradle
 repositories {
 	maven { 
         name = "Ladysnake Mods"
-        url = "https://ladysnake.jfrog.io/artifactory/mods"
+        url = "https://maven.ladysnake.org/releases"
         content {
             includeGroup 'io.github.ladysnake'
-            includeGroupByRegex '(dev|io\\.github)\\.onyxstudios\\..*'
+            includeGroup 'org.ladysnake'
+            includeGroupByRegex 'dev\\.onyxstudios\\..*'
         }
     }
     maven {
@@ -70,8 +79,8 @@ repositories {
 }
 
 dependencies {
-    modImplementation "io.github.ladysnake:impersonate:${impersonate_version}"
-    include "io.github.ladysnake:impersonate:${impersonate_version}"
+    modImplementation "org.ladysnake:impersonate:${impersonate_version}"
+    include "org.ladysnake:impersonate:${impersonate_version}"
     // Impersonate dependencies
     include "me.lucko:fabric-permissions-api:${fpa_version}"
     include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cca_version}"

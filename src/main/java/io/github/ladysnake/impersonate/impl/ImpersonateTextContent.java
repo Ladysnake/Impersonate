@@ -60,7 +60,7 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
 
     public static boolean shouldBeRevealedBy(PlayerEntity player) {
         return player instanceof ServerPlayerEntity
-            && player.world.getGameRules().getBoolean(ImpersonateGamerules.OP_REVEAL_IMPERSONATIONS)
+            && player.getWorld().getGameRules().getBoolean(ImpersonateGamerules.OP_REVEAL_IMPERSONATIONS)
             && ((ServerPlayerEntity) player).server.getPlayerManager().isOperator(player.getGameProfile());
     }
 

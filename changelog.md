@@ -1,4 +1,12 @@
 ------------------------------------------------------
+Version 2.10.0
+------------------------------------------------------
+Updated to MC 1.20.1
+
+- Now compatible with Effective cosmetics (as a replacement for Illuminations')
+  - Will need to be tested again once Effective is out for MC 1.20
+
+------------------------------------------------------
 Version 2.9.0
 ------------------------------------------------------
 Updated to MC 1.19.3

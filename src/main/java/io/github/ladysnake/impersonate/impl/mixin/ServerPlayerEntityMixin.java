@@ -40,7 +40,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Pl
 
     @Inject(method = "setClientSettings", at = @At("RETURN"))
     private void removeCapeIfDisallowed(ClientSettingsC2SPacket clientSettingsC2SPacket, CallbackInfo ci) {
-        if (Impersonator.get(this).isImpersonating() && !this.world.getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
+        if (Impersonator.get(this).isImpersonating() && !this.getWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
             this.impersonate_disableCape();
         }
     }

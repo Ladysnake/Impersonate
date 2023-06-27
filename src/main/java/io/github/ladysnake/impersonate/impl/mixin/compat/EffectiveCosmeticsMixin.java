@@ -19,8 +19,8 @@ package io.github.ladysnake.impersonate.impl.mixin.compat;
 
 import com.mojang.authlib.GameProfile;
 import io.github.ladysnake.impersonate.Impersonator;
-import ladysnake.illuminations.client.Illuminations;
-import ladysnake.illuminations.client.data.PlayerCosmeticData;
+import ladysnake.effective.cosmetics.EffectiveCosmetics;
+import ladysnake.effective.cosmetics.data.PlayerCosmeticData;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.Nullable;
@@ -33,11 +33,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Map;
 import java.util.UUID;
 
-@Mixin(Illuminations.class)
-public abstract class IlluminationsMixin {
+@Mixin(EffectiveCosmetics.class)
+public abstract class EffectiveCosmeticsMixin {
     @Shadow
     private static Map<UUID, PlayerCosmeticData> PLAYER_COSMETICS;
 
+    @SuppressWarnings({"MixinAnnotationTarget", "UnresolvedMixinReference", "InvalidInjectorMethodSignature"})
     @Inject(method = "getCosmeticData", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getUuid()Ljava/util/UUID;"), cancellable = true, require = 0)
     private static void spoofUuid(PlayerEntity player, CallbackInfoReturnable<@Nullable PlayerCosmeticData> cir) {
         GameProfile impersonatedProfile = Impersonator.get(player).getImpersonatedProfile();

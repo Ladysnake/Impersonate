@@ -27,9 +27,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.server.PlayerManager;
@@ -115,7 +115,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     private void updatePlayerLists(Packet<ClientPlayPacketListener> packet) {
-        if (!player.world.isClient) {
+        if (!player.getWorld().isClient) {
             PlayerManager playerManager = ((ServerPlayerEntity) player).server.getPlayerManager();
             if (isAloneOnServer(playerManager)) {
                 playerManager.sendToAll(packet);

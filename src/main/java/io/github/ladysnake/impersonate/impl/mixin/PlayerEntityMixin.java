@@ -83,7 +83,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         PlayerEntity self = ((PlayerEntity) (Object) this);
         if (Impersonator.get(self).isImpersonating()) {
             // if the client is aware that there is an impersonation, they should display it
-            cir.setReturnValue(MutableText.of(ImpersonateTextContent.get(self, world.isClient)));
+            cir.setReturnValue(MutableText.of(ImpersonateTextContent.get(self, getWorld().isClient)));
         }
     }
 }

@@ -2,7 +2,7 @@ import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
     id 'fabric-loom' version '1.+'
-    id 'io.github.ladysnake.chenille' version '0.10.0'
+    id 'io.github.ladysnake.chenille' version '0.11.3'
     id 'io.github.juuxel.loom-quiltflower' version "1.6.0"
 }
 
@@ -38,10 +38,11 @@ dependencies {
     modIncludeImplementation libs.fpa
     modIncludeApi libs.cca.base
     modIncludeImplementation libs.cca.entity
-    // TODO make it work with effective once released
-    modCompileOnly (compatLibs.illuminations) {
-        exclude group: 'me.shedaniel.cloth'
+
+    modCompileOnly (compatLibs.effective) {
+        transitive = false
     }
+
     modLocalImplementation libs.elmendorf
 
     api "org.jetbrains:annotations:${jb_annotations_version}"
@@ -62,9 +63,11 @@ processResources {
     }
 }
 
-task testmodJar(type: Jar, dependsOn: testmodClasses) {
-    archiveBaseName = 'ImpersonateTest'
-    archiveClassifier = 'dev'
+var testmodJar = tasks.register('testmodJar', Jar) {
+    dependsOn testmodClasses
+
+    archiveBaseName.set('ImpersonateTest')
+    archiveClassifier.set('dev')
     from(sourceSets.testmod.output) {
         include 'fabric.mod.json'
         expand 'version': project.version
@@ -74,9 +77,11 @@ task testmodJar(type: Jar, dependsOn: testmodClasses) {
     }
 }
 
-task remapTestmodJar(type: RemapJarTask, dependsOn: project.testmodJar) {
-    archiveBaseName = 'ImpersonateTest'
-    inputFile = testmodJar.archiveFile
+var remapTestmodJar = tasks.register('remapTestmodJar', RemapJarTask) {
+    dependsOn project.testmodJar
+
+    archiveBaseName.set('ImpersonateTest')
+    inputFile.set(testmodJar.get().archiveFile)
     addNestedDependencies = false
 }
 
@@ -86,14 +91,18 @@ remapJar {
     addNestedDependencies.set(false)
 }
 
-task standaloneJar(type: Jar, dependsOn: project.classes) {
+var standaloneJar = tasks.register('standaloneJar', Jar) {
+    dependsOn project.classes
+
     from sourceSets.main.output
     archiveClassifier.set('standalone-dev')
 }
 
-task remapStandaloneJar(type: RemapJarTask, dependsOn: project.standaloneJar) {
+var remapStandaloneJar = tasks.register('remapStandaloneJar', RemapJarTask) {
+    dependsOn standaloneJar
+
     archiveClassifier.set('standalone')
-    inputFile.set(standaloneJar.archiveFile)
+    inputFile.set(standaloneJar.get().archiveFile)
     addNestedDependencies.set(true)
 }
 
@@ -101,8 +110,8 @@ assemble.dependsOn(remapStandaloneJar)
 
 chenille {
     configurePublishing {
-        mainArtifact = remapStandaloneJar.archiveFile
-        withArtifactory()
+        mainArtifact = remapStandaloneJar.get().archiveFile
+        withLadysnakeMaven()
         withCurseforgeRelease()
         withGithubRelease()
         withModrinthRelease()

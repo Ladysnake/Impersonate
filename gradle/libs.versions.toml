@@ -1,7 +1,7 @@
 [versions]
-cca = "5.1.0"
+cca = "5.2.1"
 fpa = "0.2-SNAPSHOT"
-elmendorf = "0.9.1"
+elmendorf = "0.11.0"
 
 [libraries]
 cca-base = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-base", version.ref = "cca" }

@@ -47,6 +47,7 @@ public final class Impersonate implements ModInitializer, EntityComponentInitial
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register((dispatcher, acc, dedicated) -> ImpersonateCommand.register(dispatcher));
         ImpersonateGamerules.init();
+        PlayerImpersonator.init();
     }
 
     @Override

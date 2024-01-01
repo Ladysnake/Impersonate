@@ -142,7 +142,7 @@ public final class ServerPlayerSkins {
         for (ServerPlayerEntity other : Objects.requireNonNull(player.getServer()).getPlayerManager().getPlayerList()) {
             // Refreshing tablist for each player
             other.networkHandler.sendPacket(new PlayerRemoveS2CPacket(List.of(player.getUuid())));
-            other.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, player));
+            other.networkHandler.sendPacket(PlayerListS2CPacket.entryFromPlayer(List.of(player)));
         }
 
         ChunkManager manager = player.getWorld().getChunkManager();

@@ -22,6 +22,7 @@ import dev.onyxstudios.cca.api.v3.component.CopyableComponent;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -45,6 +46,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, CopyableComponent<PlayerImpersonator> {
+
+    public static void init() {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            if (Impersonator.get(handler.getPlayer()) instanceof PlayerImpersonator impersonator && impersonator.isImpersonating()) {
+                impersonator.syncChanges(impersonator.impersonatedProfile);
+            }
+        });
+    }
 
     @NotNull
     private final PlayerEntity player;
@@ -94,13 +103,17 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
         if (this.getImpersonatedProfile() != profile) {
             this.impersonatedProfile = profile;
             this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
-            if (this.player instanceof ServerPlayerEntity serverPlayer) {
-                updatePlayerLists(new PlayerRemoveS2CPacket(List.of(this.player.getUuid())));
-                this.applyCapeGamerule(serverPlayer, profile);
-                ServerPlayerSkins.setSkin(serverPlayer, profile == null ? this.getActualProfile() : profile);
-                updatePlayerLists(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, serverPlayer));
-            }
+            this.syncChanges(profile);
             Impersonate.IMPERSONATION.sync(this.player);
+        }
+    }
+
+    private void syncChanges(@Nullable GameProfile profile) {
+        if (this.player instanceof ServerPlayerEntity serverPlayer && serverPlayer.networkHandler != null) {
+            updatePlayerLists(new PlayerRemoveS2CPacket(List.of(this.player.getUuid())));
+            this.applyCapeGamerule(serverPlayer, profile);
+            ServerPlayerSkins.setSkin(serverPlayer, profile == null ? this.getActualProfile() : profile);
+            updatePlayerLists(PlayerListS2CPacket.entryFromPlayer(List.of(serverPlayer)));
         }
     }
 

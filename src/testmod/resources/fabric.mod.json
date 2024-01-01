@@ -18,6 +18,9 @@
     "main": [
       "io.github.ladysnake.impersonatest.Impersonatest"
     ],
+    "client": [
+      "io.github.ladysnake.impersonatest.ImpersonatestClient"
+    ],
     "fabric-gametest": [
       "io.github.ladysnake.impersonatest.ImpersonateTestSuite"
     ]

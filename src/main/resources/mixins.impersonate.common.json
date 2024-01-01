@@ -13,10 +13,9 @@
     "PlayerListS2CPacketEntryAccessor",
     "PlayerListS2CPacketEntryMixin",
     "PlayerManagerMixin",
+    "ServerCommonNetworkHandlerMixin",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin",
     "TextMixin",
-    "TextSerializerMixin",
     "ThreadedAnvilChunkStorageAccessor",
     "TranslatableTextContentMixin"
   ],

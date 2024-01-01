@@ -17,17 +17,30 @@
  */
 package io.github.ladysnake.impersonate.impl;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.ladysnake.impersonate.Impersonator;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandOutput;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 public class ImpersonateTextContent implements RecipientAwareTextContent {
+    private static final MapCodec<ImpersonateTextContent> CODEC = RecordCodecBuilder.mapCodec(
+        instance -> instance.group(Codec.STRING.fieldOf("text").forGetter(ImpersonateTextContent::getString)).apply(instance, text -> new ImpersonateTextContent(text, text, false))
+    );
+    private static final TextContent.Type<ImpersonateTextContent> TYPE = new TextContent.Type<>(CODEC, "text");
     private final String trueText;
     private final String fakedText;
     private boolean revealed;
@@ -72,6 +85,16 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
     @Override
     public <T> Optional<T> visit(StringVisitable.Visitor<T> visitor) {
         return visitor.accept(this.getString());
+    }
+
+    @Override
+    public MutableText parse(@Nullable ServerCommandSource source, @Nullable Entity sender, int depth) throws CommandSyntaxException {
+        return Text.literal(this.getString());
+    }
+
+    @Override
+    public Type<?> getType() {
+        return TYPE;
     }
 
     public String getString() {

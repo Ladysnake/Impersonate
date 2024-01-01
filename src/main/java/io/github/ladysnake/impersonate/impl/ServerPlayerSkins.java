@@ -33,6 +33,7 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
@@ -165,16 +166,18 @@ public final class ServerPlayerSkins {
         // need to change the player entity on the client
         ServerWorld targetWorld = (ServerWorld) player.getWorld();
         player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(
-            targetWorld.getDimensionKey(),
-            targetWorld.getRegistryKey(),
-            BiomeAccess.hashSeed(targetWorld.getSeed()),
-            player.interactionManager.getGameMode(),
-            player.interactionManager.getPreviousGameMode(),
-            targetWorld.isDebugWorld(),
-            targetWorld.isFlat(),
-            PlayerRespawnS2CPacket.KEEP_ATTRIBUTES,
-            player.getLastDeathPos(),
-            player.getPortalCooldown()
+            new CommonPlayerSpawnInfo(
+                targetWorld.getDimensionKey(),
+                targetWorld.getRegistryKey(),
+                BiomeAccess.hashSeed(targetWorld.getSeed()),
+                player.interactionManager.getGameMode(),
+                player.interactionManager.getPreviousGameMode(),
+                targetWorld.isDebugWorld(),
+                targetWorld.isFlat(),
+                player.getLastDeathPos(),
+                player.getPortalCooldown()
+            ),
+            PlayerRespawnS2CPacket.KEEP_ATTRIBUTES
         ));
         player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
         player.server.getPlayerManager().sendCommandTree(player);

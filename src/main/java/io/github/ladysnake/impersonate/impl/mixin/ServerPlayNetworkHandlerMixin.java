@@ -24,44 +24,52 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerCommonNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin {
     @Shadow
-    public ServerPlayerEntity player;
+    @Final
+    protected MinecraftServer server;
 
-    @ModifyArg(method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V"))
+    @ModifyArg(method = "send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;Z)V"))
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
-        if (packet instanceof ChatMessageS2CPacket chatPacket) {
-            if (this.existsImpersonator()) {
-                return PacketMeddling.resolveChatMessage(chatPacket, player);
+        if (((Object) this) instanceof ServerPlayNetworkHandler self) {
+            ServerPlayerEntity player = self.player;
+            if (packet instanceof ChatMessageS2CPacket chatPacket) {
+                if (this.existsImpersonator()) {
+                    return PacketMeddling.resolveChatMessage(chatPacket, player);
+                }
+            } else if (packet instanceof GameMessageS2CPacket gamePacket) {
+                if (this.existsImpersonator()) {
+                    Text resolvedText = ((RecipientAwareText) gamePacket.content()).impersonateResolveAll(player);
+                    return new GameMessageS2CPacket(resolvedText, gamePacket.overlay());
+                }
+            } else if (packet instanceof PlayerListS2CPacket listPacket) {
+                if (this.existsImpersonator()) {
+                    PlayerListS2CPacket copy = PacketMeddling.copyPacket(listPacket, PlayerListS2CPacket::new);
+                    PacketMeddling.resolvePlayerListEntries(copy, player);
+                    return copy;
+                }
             }
-        } else if (packet instanceof GameMessageS2CPacket gamePacket) {
-            if (this.existsImpersonator()) {
-                Text resolvedText = ((RecipientAwareText) gamePacket.content()).impersonateResolveAll(player);
-                return new GameMessageS2CPacket(resolvedText, gamePacket.overlay());
-            }
-        } else if (packet instanceof PlayerListS2CPacket listPacket) {
-            if (this.existsImpersonator()) {
-                PlayerListS2CPacket copy = PacketMeddling.copyPacket(listPacket, PlayerListS2CPacket::new);
-                PacketMeddling.resolvePlayerListEntries(copy, player);
-                return copy;
-            }
+
         }
         return packet;
     }
 
     @Unique
     private boolean existsImpersonator() {
-        for (ServerPlayerEntity player : this.player.server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayerEntity player : this.server.getPlayerManager().getPlayerList()) {
             if (Impersonator.get(player).isImpersonating()) {
                 return true;
             }

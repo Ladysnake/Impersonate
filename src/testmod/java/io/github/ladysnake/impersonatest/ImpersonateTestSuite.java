@@ -18,8 +18,6 @@
 package io.github.ladysnake.impersonatest;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.elmendorf.GameTestUtil;
-import io.github.ladysnake.elmendorf.impl.MockClientConnection;
 import io.github.ladysnake.impersonate.Impersonate;
 import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.ImpersonateTextContent;
@@ -30,9 +28,11 @@ import net.minecraft.network.encryption.Signer;
 import net.minecraft.network.message.LastSeenMessageList;
 import net.minecraft.network.message.MessageBody;
 import net.minecraft.network.message.MessageChain;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.GameTest;
@@ -41,6 +41,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
+import org.ladysnake.elmendorf.GameTestUtil;
+import org.ladysnake.elmendorf.impl.MockClientConnection;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -88,12 +90,14 @@ public class ImpersonateTestSuite implements FabricGameTest {
         ServerPlayerEntity player = new ServerPlayerEntity(
             ctx.getWorld().getServer(),
             ctx.getWorld(),
-            new GameProfile(senderUuid, "test-mock-player")
+            new GameProfile(senderUuid, "test-mock-player"),
+            SyncedClientOptions.createDefault()
         );
         player.networkHandler = new ServerPlayNetworkHandler(
             ctx.getWorld().getServer(),
             new MockClientConnection(NetworkSide.CLIENTBOUND),
-            player
+            player,
+            ConnectedClientData.createDefault(player.getGameProfile())
         );
         Impersonator.get(player).impersonate(IMPERSONATION_KEY, new GameProfile(UUID.randomUUID(), "impersonated"));
         String text = "Hi";

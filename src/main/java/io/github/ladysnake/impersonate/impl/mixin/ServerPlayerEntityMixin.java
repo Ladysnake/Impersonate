@@ -22,7 +22,7 @@ import io.github.ladysnake.impersonate.Impersonator;
 import io.github.ladysnake.impersonate.impl.ImpersonateGamerules;
 import io.github.ladysnake.impersonate.impl.PlayerEntityExtensions;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.c2s.play.ClientSettingsC2SPacket;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -38,8 +38,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Pl
         super(world, pos, yaw, profile);
     }
 
-    @Inject(method = "setClientSettings", at = @At("RETURN"))
-    private void removeCapeIfDisallowed(ClientSettingsC2SPacket clientSettingsC2SPacket, CallbackInfo ci) {
+    @Inject(method = "setClientOptions", at = @At("RETURN"))
+    private void removeCapeIfDisallowed(SyncedClientOptions clientOptions, CallbackInfo ci) {
         if (Impersonator.get(this).isImpersonating() && !this.getWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
             this.impersonate_disableCape();
         }

@@ -2,7 +2,7 @@
 Version 3.0.0
 ------------------------------------------------------
 - Updated to 1.20.4
-- Changed package from `io.github.ladysnake` to `org.ladysnake`
+- **BREAKING (for developers) :** Changed package from `io.github.ladysnake` to `org.ladysnake`
 
 ------------------------------------------------------
 Version 2.10.1

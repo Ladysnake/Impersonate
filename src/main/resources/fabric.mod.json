@@ -13,9 +13,9 @@
     "Aelpecyem"
   ],
   "contact": {
+    "homepage": "https://ladysnake.org/wiki/impersonate",
     "sources": "https://github.com/Ladysnake/Impersonate",
-    "issues": "https://github.com/Ladysnake/Impersonate/issues",
-    "discord": "ladysnake.glitch.me/discord"
+    "issues": "https://github.com/Ladysnake/Impersonate/issues"
   },
   "environment": "*",
   "entrypoints": {
@@ -49,6 +49,12 @@
   "custom": {
     "cardinal-components": [
       "impersonate:impersonation"
-    ]
+    ],
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.ladysnake.org",
+        "modmenu.wiki": "https://ladysnake.org/wiki/impersonate"
+      }
+    }
   }
 }

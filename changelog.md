@@ -5,6 +5,11 @@ Version 3.0.0
 - **BREAKING (for developers) :** Changed package from `io.github.ladysnake` to `org.ladysnake`
 
 ------------------------------------------------------
+Version 2.10.2
+------------------------------------------------------
+- Fixed incompatibility with Effective 3.0
+
+------------------------------------------------------
 Version 2.10.1
 ------------------------------------------------------
 - Fixed chat messages from impersonators appearing as unverified

@@ -1,4 +1,10 @@
 ------------------------------------------------------
+Version 2.10.1
+------------------------------------------------------
+- Fixed chat messages from impersonators appearing as unverified
+- Fixed impersonators disappearing from the player list entirely
+
+------------------------------------------------------
 Version 2.10.0
 ------------------------------------------------------
 Updated to MC 1.20.1

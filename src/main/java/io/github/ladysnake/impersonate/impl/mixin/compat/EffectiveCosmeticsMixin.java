@@ -19,11 +19,11 @@ package io.github.ladysnake.impersonate.impl.mixin.compat;
 
 import com.mojang.authlib.GameProfile;
 import io.github.ladysnake.impersonate.Impersonator;
-import ladysnake.effective.cosmetics.EffectiveCosmetics;
-import ladysnake.effective.cosmetics.data.PlayerCosmeticData;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.effective.cosmetics.EffectiveCosmetics;
+import org.ladysnake.effective.cosmetics.data.PlayerCosmeticData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

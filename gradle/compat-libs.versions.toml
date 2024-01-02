@@ -1,5 +1,5 @@
 [versions]
-effective = "2.1+1.19.2"
+effective = "3.0.0+1.20.1"
 
 [libraries]
-effective = { module = "io.github.ladysnake:Effective", version.ref = "effective" }
+effective = { module = "org.ladysnake:effective", version.ref = "effective" }

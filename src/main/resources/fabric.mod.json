@@ -15,18 +15,19 @@
   "contact": {
     "sources": "https://github.com/Ladysnake/Impersonate",
     "issues": "https://github.com/Ladysnake/Impersonate/issues",
+    "website": "https://ladysnake.org/wiki/impersonate",
     "discord": "ladysnake.glitch.me/discord"
   },
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.ladysnake.impersonate.Impersonate"
+      "org.ladysnake.impersonate.Impersonate"
     ],
     "client": [
-      "io.github.ladysnake.impersonate.impl.ImpersonateClient"
+      "org.ladysnake.impersonate.impl.ImpersonateClient"
     ],
     "cardinal-components-entity": [
-      "io.github.ladysnake.impersonate.Impersonate"
+      "org.ladysnake.impersonate.Impersonate"
     ]
   },
   "mixins": [

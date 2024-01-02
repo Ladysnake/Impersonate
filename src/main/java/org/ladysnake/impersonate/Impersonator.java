@@ -1,0 +1,108 @@
+/*
+ * Impersonate
+ * Copyright (C) 2020-2024 Ladysnake
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; If not, see <https://www.gnu.org/licenses>.
+ */
+package org.ladysnake.impersonate;
+
+import com.mojang.authlib.GameProfile;
+import dev.onyxstudios.cca.api.v3.component.Component;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+public interface Impersonator extends Component {
+
+    static Impersonator get(@NotNull PlayerEntity player) {
+        return Impersonate.IMPERSONATION.get(player);
+    }
+
+    /**
+     * Start impersonating a player designated by {@code profile}.
+     *
+     * <p> {@code profile} <em>may or may not</em> designate a player that is connected on the same server
+     * as the impersonating player. Impersonations of offline players are valid.
+     *
+     * <p> If the player is currently impersonating {@code profile} (ie. {@code profile.equals(getImpersonatedProfile())}),
+     * this method does nothing. If the player is impersonating someone else, this method will pause the current impersonation.
+     *
+     * @param profile the {@code GameProfile} of the player to impersonate
+     * @param key     an identifying key for the source of the impersonation
+     * @see #stopImpersonation(Identifier)
+     */
+    void impersonate(@NotNull Identifier key, @NotNull GameProfile profile);
+
+    /**
+     * Stops all ongoing impersonations.
+     */
+    void stopImpersonations();
+
+    /**
+     * Stops an ongoing impersonation.
+     *
+     * @param key the key identifying the source of the impersonation
+     * @return the game profile that was impersonated under that impersonation key
+     * @see #impersonate(Identifier, GameProfile)
+     */
+    @Nullable GameProfile stopImpersonation(@NotNull Identifier key);
+
+    /**
+     * Returns {@code true} if this player is currently impersonating another player.
+     *
+     * @return {@code true} if this player is currently impersonating someone, and {@code false} otherwise
+     */
+    boolean isImpersonating();
+
+    /**
+     * Returns the profile of the player that's being impersonated, or {@code null} if no impersonation
+     * is taking place (ie. {@link #isImpersonating()} returns {@code false}).
+     *
+     * @return the impersonated profile, or {@code null} if no impersonation is taking place
+     */
+    @Nullable GameProfile getImpersonatedProfile();
+
+    /**
+     * Returns the profile impersonated with the given {@code key}.
+     *
+     * <p>The returned profile may not be the same as that returned by {@link #getImpersonatedProfile()},
+     * especially if several impersonations are ongoing.
+     *
+     * @param key the key identifying the source of the impersonation
+     * @return the game profile that is being impersonated under that impersonation key
+     * @since 1.8.0
+     */
+    @Nullable GameProfile getImpersonatedProfile(@NotNull Identifier key);
+
+    /**
+     * Returns the player's actual {@link GameProfile}, disregarding any impersonation.
+     *
+     * @return the player's actual profile
+     */
+    @NotNull GameProfile getActualProfile();
+
+    /**
+     * Returns the player's profile, edited to account for an ongoing impersonation.
+     *
+     * <p> If the player is not impersonating anyone, this method behaves as if
+     * calling {@link #getActualProfile()}. Otherwise, it returns a {@code GameProfile}
+     * with the same {@link GameProfile#getId() id} as the original, but with the name
+     * of the impersonated player.
+     *
+     * @return the player's current, possibly faked, profile
+     */
+    @NotNull GameProfile getEditedProfile();
+
+}

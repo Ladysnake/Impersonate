@@ -16,13 +16,13 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.ladysnake.impersonatest.Impersonatest"
+      "org.ladysnake.impersonatest.Impersonatest"
     ],
     "client": [
-      "io.github.ladysnake.impersonatest.ImpersonatestClient"
+      "org.ladysnake.impersonatest.ImpersonatestClient"
     ],
     "fabric-gametest": [
-      "io.github.ladysnake.impersonatest.ImpersonateTestSuite"
+      "org.ladysnake.impersonatest.ImpersonateTestSuite"
     ]
   },
   "depends": {

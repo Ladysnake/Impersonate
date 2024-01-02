@@ -7,4 +7,4 @@ elmendorf = "0.12.0"
 cca-base = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-base", version.ref = "cca" }
 cca-entity = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-entity", version.ref = "cca" }
 fpa = { module = "me.lucko:fabric-permissions-api", version.ref = "fpa" }
-elmendorf = { module = "io.github.ladysnake:elmendorf", version.ref = "elmendorf"}
+elmendorf = { module = "org.ladysnake:elmendorf", version.ref = "elmendorf"}

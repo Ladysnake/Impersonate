@@ -1,0 +1,13 @@
+{
+  "impersonate:commands.disguise.clear.success.other": "%s 停止了對 %s 的偽裝",
+  "impersonate:commands.disguise.clear.success.self": "停止了對 %s 的偽裝",
+  "impersonate:commands.disguise.query.no_one.success.other": "%s 沒有偽裝成任何人",
+  "impersonate:commands.disguise.query.no_one.success.self": "沒有偽裝成任何人",
+  "impersonate:commands.disguise.query.success.other": "%s 偽裝成了 %s",
+  "impersonate:commands.disguise.query.success.self": "偽裝成了 %s",
+  "impersonate:commands.disguise.start.success.other": "%s 開始偽裝成 %s",
+  "impersonate:commands.disguise.start.success.self": "開始偽裝成 %s",
+  "gamerule.impersonate:fakeCapes": "複製偽裝玩家的披風",
+  "gamerule.impersonate:logRevealImpersonations": "在伺服器記錄檔中顯示正在進行的偽裝",
+  "gamerule.impersonate:opRevealImpersonations": "向管理員顯示正在進行的偽裝"
+}

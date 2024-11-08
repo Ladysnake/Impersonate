@@ -1,0 +1,13 @@
+{
+  "impersonate:commands.disguise.clear.success.other": "%s hat aufgehört, sich als %s auszugeben",
+  "impersonate:commands.disguise.clear.success.self": "Identitätswechsel mit %s gestoppt",
+  "impersonate:commands.disguise.query.no_one.success.other": "%s gibt sich nicht als jemand anderes aus",
+  "impersonate:commands.disguise.query.no_one.success.self": "Aktuell kein Identitätswechsel aktiv",
+  "impersonate:commands.disguise.query.success.other": "%s gibt sich als %s aus",
+  "impersonate:commands.disguise.query.success.self": "Identitätswechsel mit %s",
+  "impersonate:commands.disguise.start.success.other": "%s hat begonnen, sich als %s auszugeben",
+  "impersonate:commands.disguise.start.success.self": "Identitätswechsel mit %s begonnen",
+  "gamerule.impersonate:fakeCapes": "Umhänge des nachgeahmten Spielers kopieren",
+  "gamerule.impersonate:logRevealImpersonations": "Identitätswechsel in den Server Logs anzeigen",
+  "gamerule.impersonate:opRevealImpersonations": "Identitätswechsel den Server Operatoren anzeigen"
+}

@@ -20,6 +20,16 @@ chenille {
     javaVersion = 17
 }
 
+loom {
+    runs {
+        clientGametest {
+            inherit testmodClient
+            name "Client Game Test"
+            vmArg "-Dfabric.client.gametest"
+        }
+    }
+}
+
 repositories {
     chenille.repositories {
         ladysnake()

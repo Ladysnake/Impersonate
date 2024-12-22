@@ -23,6 +23,9 @@
     ],
     "fabric-gametest": [
       "org.ladysnake.impersonatest.ImpersonateTestSuite"
+    ],
+    "fabric-client-gametest": [
+      "org.ladysnake.impersonatest.ImpersonateClientTestSuite"
     ]
   },
   "depends": {

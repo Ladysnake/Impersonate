@@ -25,7 +25,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.ladysnake.impersonate.Impersonator;
 
@@ -37,9 +36,9 @@ public class ImpersonItem extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         if (Impersonator.get(user).stopImpersonation(IMPERSONATION_KEY) != null) {
-            return TypedActionResult.success(user.getStackInHand(hand));
+            return ActionResult.SUCCESS;
         }
         return super.use(world, user, hand);
     }

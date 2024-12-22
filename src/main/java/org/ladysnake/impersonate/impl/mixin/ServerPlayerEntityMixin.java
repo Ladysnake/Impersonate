@@ -21,12 +21,14 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.ladysnake.impersonate.Impersonator;
 import org.ladysnake.impersonate.impl.ImpersonateGamerules;
 import org.ladysnake.impersonate.impl.PlayerEntityExtensions;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,13 +36,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity implements PlayerEntityExtensions {
 
+    @Shadow
+    public abstract ServerWorld getServerWorld();
+
     public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
         super(world, pos, yaw, profile);
     }
 
     @Inject(method = "setClientOptions", at = @At("RETURN"))
     private void removeCapeIfDisallowed(SyncedClientOptions clientOptions, CallbackInfo ci) {
-        if (Impersonator.get(this).isImpersonating() && !this.getWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
+        if (Impersonator.get(this).isImpersonating() && !this.getServerWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
             this.impersonate_disableCape();
         }
     }

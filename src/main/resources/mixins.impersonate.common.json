@@ -13,10 +13,11 @@
     "PlayerListS2CPacketEntryAccessor",
     "PlayerListS2CPacketEntryMixin",
     "PlayerManagerMixin",
+    "ServerChunkLoadingManagerAccessor",
     "ServerCommonNetworkHandlerMixin",
+    "ServerPlayerEntity$CommandOutput",
     "ServerPlayerEntityMixin",
     "TextMixin",
-    "ServerChunkLoadingManagerAccessor",
     "TranslatableTextContentMixin"
   ],
   "injectors": {

@@ -52,7 +52,7 @@ public abstract class ServerCommonNetworkHandlerMixin {
                 }
             } else if (packet instanceof GameMessageS2CPacket gamePacket) {
                 if (this.existsImpersonator()) {
-                    Text resolvedText = ((RecipientAwareText) gamePacket.content()).impersonateResolveAll(player);
+                    Text resolvedText = ((RecipientAwareText) gamePacket.content()).impersonateResolveAll(player.getCommandOutput());
                     return new GameMessageS2CPacket(resolvedText, gamePacket.overlay());
                 }
             } else if (packet instanceof PlayerListS2CPacket listPacket) {

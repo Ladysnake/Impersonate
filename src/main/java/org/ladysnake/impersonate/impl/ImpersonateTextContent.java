@@ -26,11 +26,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
+import net.minecraft.text.*;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.impersonate.Impersonator;
 
@@ -66,7 +62,7 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
 
     @Override
     public void impersonateResolve(CommandOutput recipient) {
-        revealed = !(recipient instanceof PlayerEntity player) || shouldBeRevealedBy(player);
+        revealed = !(recipient instanceof ImpersonateCommandOutput impersonateOutput) || impersonateOutput.impersonate$shouldRevealName();
     }
 
     public boolean isRevealed() {
@@ -74,9 +70,9 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
     }
 
     public static boolean shouldBeRevealedBy(PlayerEntity player) {
-        return player instanceof ServerPlayerEntity
-            && player.getWorld().getGameRules().getBoolean(ImpersonateGamerules.OP_REVEAL_IMPERSONATIONS)
-            && ((ServerPlayerEntity) player).server.getPlayerManager().isOperator(player.getGameProfile());
+        return player instanceof ServerPlayerEntity serverPlayer
+            && serverPlayer.getServerWorld().getGameRules().getBoolean(ImpersonateGamerules.OP_REVEAL_IMPERSONATIONS)
+            && serverPlayer.server.getPlayerManager().isOperator(player.getGameProfile());
     }
 
     @Override

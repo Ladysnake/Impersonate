@@ -21,6 +21,8 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 
 public final class Impersonatest implements ModInitializer {
@@ -31,7 +33,8 @@ public final class Impersonatest implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registries.ITEM, id("impersonitem"), new ImpersonItem(new Item.Settings()));
+        Identifier impersonitemId = id("impersonitem");
+        Registry.register(Registries.ITEM, impersonitemId, new ImpersonItem(new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, impersonitemId))));
     }
 
 }

@@ -17,28 +17,24 @@
  */
 package org.ladysnake.impersonate.impl;
 
-import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
-import org.ladysnake.impersonate.Impersonate;
 import org.ladysnake.impersonate.Impersonator;
 import org.ladysnake.impersonate.impl.mixin.PlayerListS2CPacketEntryAccessor;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 public final class PacketMeddling {
 
@@ -72,11 +68,13 @@ public final class PacketMeddling {
     }
 
     public static ChatMessageS2CPacket resolveChatMessage(ChatMessageS2CPacket chatPacket, ServerPlayerEntity player) {
-        @Nullable Text unsignedContent = Optional.ofNullable(chatPacket.unsignedContent()).map(t -> ((RecipientAwareText) t).impersonateResolveAll(player)).orElse(null);
-        Text name = ((RecipientAwareText) chatPacket.serializedParameters().name()).impersonateResolveAll(player);
+        CommandOutput commandOutput = player.getCommandOutput();
+        @Nullable Text unsignedContent = Optional.ofNullable(chatPacket.unsignedContent()).map(t -> ((RecipientAwareText) t).impersonateResolveAll(commandOutput)).orElse(null);
+        Text name = ((RecipientAwareText) chatPacket.serializedParameters().name()).impersonateResolveAll(commandOutput);
         Optional<Text> targetName = chatPacket.serializedParameters().targetName().map(text -> text instanceof RecipientAwareText t
-            ? t.impersonateResolveAll(player)
+            ? t.impersonateResolveAll(commandOutput)
             : null);
+
 
         // God, I wish we had a Record#copy method in this language
         // And yes we need to do a deep copy at the end, to avoid sharing text references

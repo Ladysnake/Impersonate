@@ -18,29 +18,27 @@
 package org.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.registry.RegistryWrapper;
-import org.ladysnake.cca.api.v3.component.CopyableComponent;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.CopyableComponent;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.impersonate.Impersonate;
 import org.ladysnake.impersonate.Impersonator;
 
@@ -48,7 +46,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, CopyableComponent<PlayerImpersonator> {
 
@@ -192,8 +189,10 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
         this.resetImpersonation();
     }
 
-    private static final int ID_PRESENT = 0b01;
-    private static final int NAME_PRESENT = 0b10;
+    @Override
+    public boolean isRequiredOnClient() {
+        return false;
+    }
 
     @Override
     public boolean shouldSyncWith(ServerPlayerEntity player) {

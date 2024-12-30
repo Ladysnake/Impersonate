@@ -38,6 +38,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.ladysnake.elmendorf.GameTestUtil;
 import org.ladysnake.elmendorf.impl.MockClientConnection;
 import org.ladysnake.impersonate.Impersonate;
@@ -81,12 +82,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
     public void nameInChatGetsRevealed(TestContext ctx) throws NoSuchAlgorithmException {
         // Do the bare minimum to simulate a legit client with a valid keypair
         UUID senderUuid = UUID.randomUUID();
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        Signer signer = Signer.create(keyPair.getPrivate(), "SHA256withRSA");
-        MessageChain.Packer messagePacker = new MessageChain(senderUuid, UUID.randomUUID()).getPacker(signer);
-        LastSeenMessageList lastSeenMessages = LastSeenMessageList.EMPTY;
+        ChatMessageC2SPacket chatMessagePacket = createChatMessagePacket(senderUuid, "Hi");
         ServerPlayerEntity player = new ServerPlayerEntity(
             ctx.getWorld().getServer(),
             ctx.getWorld(),
@@ -100,9 +96,6 @@ public class ImpersonateTestSuite implements FabricGameTest {
             ConnectedClientData.createDefault(player.getGameProfile(), false)
         );
         Impersonator.get(player).impersonate(IMPERSONATION_KEY, new GameProfile(UUID.randomUUID(), "impersonated"));
-        String text = "Hi";
-        Instant timestamp = Instant.now();
-        long salt = NetworkEncryptionUtils.SecureRandomUtil.nextLong();
         PlayerManager playerManager = ctx.getWorld().getServer().getPlayerManager();
         ServerPlayerEntity otherPlayer = ctx.spawnServerPlayer(1, 0, 1);
 
@@ -110,13 +103,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
             playerManager.getPlayerList().add(player);
             playerManager.getPlayerList().add(otherPlayer);
             playerManager.addToOperators(player.getGameProfile());
-            player.networkHandler.onChatMessage(new ChatMessageC2SPacket(
-                text,
-                timestamp,
-                salt,
-                messagePacker.pack(new MessageBody(text, timestamp, salt, lastSeenMessages)),
-                new LastSeenMessageList.Acknowledgment(0, new BitSet())
-            ));
+            player.networkHandler.onChatMessage(chatMessagePacket);
             ctx.verifyConnection(player, conn -> conn.sent(
                 ChatMessageS2CPacket.class,
                 chatPacket -> chatPacket.serializedParameters().name().getString()
@@ -133,5 +120,24 @@ public class ImpersonateTestSuite implements FabricGameTest {
             playerManager.getPlayerList().remove(player);
             playerManager.getPlayerList().remove(otherPlayer);
         }
+    }
+
+    public static @NotNull ChatMessageC2SPacket createChatMessagePacket(UUID senderUuid, String text) throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        Signer signer = Signer.create(keyPair.getPrivate(), "SHA256withRSA");
+        MessageChain.Packer messagePacker = new MessageChain(senderUuid, UUID.randomUUID()).getPacker(signer);
+        LastSeenMessageList lastSeenMessages = LastSeenMessageList.EMPTY;
+        Instant timestamp = Instant.now();
+        long salt = NetworkEncryptionUtils.SecureRandomUtil.nextLong();
+        ChatMessageC2SPacket chatMessagePacket = new ChatMessageC2SPacket(
+            text,
+            timestamp,
+            salt,
+            messagePacker.pack(new MessageBody(text, timestamp, salt, lastSeenMessages)),
+            new LastSeenMessageList.Acknowledgment(0, new BitSet())
+        );
+        return chatMessagePacket;
     }
 }

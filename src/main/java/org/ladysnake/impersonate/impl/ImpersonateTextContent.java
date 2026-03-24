@@ -21,12 +21,17 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.StringVisitable;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextContent;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.impersonate.Impersonator;
 
@@ -37,7 +42,6 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
     private static final MapCodec<ImpersonateTextContent> CODEC = RecordCodecBuilder.mapCodec(
         instance -> instance.group(Codec.STRING.fieldOf("text").forGetter(ImpersonateTextContent::getString)).apply(instance, text -> new ImpersonateTextContent(text, text, false))
     );
-    private static final TextContent.Type<ImpersonateTextContent> TYPE = new TextContent.Type<>(CODEC, "text");
     private final String trueText;
     private final String fakedText;
     private boolean revealed;
@@ -48,8 +52,8 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
 
     public static TextContent get(PlayerEntity player, boolean reveal) {
         Impersonator impersonator = Impersonator.get(player);
-        String fakeName = impersonator.getEditedProfile().getName();
-        String trueName = player.getGameProfile().getName();
+        String fakeName = impersonator.getEditedProfile().name();
+        String trueName = player.getGameProfile().name();
         String trueText = String.format("%s(%s)", fakeName, trueName);
         return new ImpersonateTextContent(trueText, fakeName, reveal && !Objects.equals(fakeName, trueName));
     }
@@ -71,8 +75,8 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
 
     public static boolean shouldBeRevealedBy(PlayerEntity player) {
         return player instanceof ServerPlayerEntity serverPlayer
-            && serverPlayer.getServerWorld().getGameRules().getBoolean(ImpersonateGamerules.OP_REVEAL_IMPERSONATIONS)
-            && serverPlayer.server.getPlayerManager().isOperator(player.getGameProfile());
+            && serverPlayer.getEntityWorld().getGameRules().getValue(ImpersonateGamerules.OP_REVEAL_IMPERSONATIONS)
+            && serverPlayer.getPermissions().hasPermission(DefaultPermissions.MODERATORS);
     }
 
     @Override
@@ -91,8 +95,8 @@ public class ImpersonateTextContent implements RecipientAwareTextContent {
     }
 
     @Override
-    public Type<?> getType() {
-        return TYPE;
+    public MapCodec<? extends TextContent> getCodec() {
+        return CODEC;
     }
 
     public String getString() {

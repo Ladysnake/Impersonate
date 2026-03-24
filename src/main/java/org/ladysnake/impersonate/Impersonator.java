@@ -18,11 +18,12 @@
 package org.ladysnake.impersonate;
 
 import com.mojang.authlib.GameProfile;
-import org.ladysnake.cca.api.v3.component.Component;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.Component;
 
 public interface Impersonator extends Component {
 
@@ -44,6 +45,20 @@ public interface Impersonator extends Component {
      * @see #stopImpersonation(Identifier)
      */
     void impersonate(@NotNull Identifier key, @NotNull GameProfile profile);
+
+    /**
+     * Start impersonating a player designated by {@code playerEntry}.
+     *
+     * <p>This method is equivalent to calling {@link #impersonate(Identifier, GameProfile)} with a game profile
+     * constructed from the {@code playerEntry}.
+     *
+     * @param playerEntry the entry representing the player to impersonate
+     * @param key    an identifying key for the source of the impersonation
+     * @see #stopImpersonation(Identifier)
+     */
+    default void impersonate(@NotNull Identifier key, @NotNull PlayerConfigEntry playerEntry) {
+        impersonate(key, new GameProfile(playerEntry.id(), playerEntry.name()));
+    }
 
     /**
      * Stops all ongoing impersonations.
@@ -98,7 +113,7 @@ public interface Impersonator extends Component {
      *
      * <p> If the player is not impersonating anyone, this method behaves as if
      * calling {@link #getActualProfile()}. Otherwise, it returns a {@code GameProfile}
-     * with the same {@link GameProfile#getId() id} as the original, but with the name
+     * with the same {@link GameProfile#id() id} as the original, but with the name
      * of the impersonated player.
      *
      * @return the player's current, possibly faked, profile

@@ -1,4 +1,12 @@
 ------------------------------------------------------
+Version 3.4.0
+------------------------------------------------------
+- Updated to MC 1.21.11
+- Fixed random crash upon death or joining a server
+- Gamerules have been renamed to match vanilla names (`impersonate:fakeCapes` -> `impersonate:fake_capes`, etc.)
+- Due to large changes in the game's codebase, this release may have some bugs. Please report any you find !
+
+------------------------------------------------------
 Version 3.3.0
 ------------------------------------------------------
 - Updated to MC 1.21.4

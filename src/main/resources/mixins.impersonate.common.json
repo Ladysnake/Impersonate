@@ -13,6 +13,7 @@
     "PlayerListS2CPacketEntryAccessor",
     "PlayerListS2CPacketEntryMixin",
     "PlayerManagerMixin",
+    "PropertyMapAccessor",
     "ServerChunkLoadingManagerAccessor",
     "ServerCommonNetworkHandlerMixin",
     "ServerPlayerEntity$CommandOutput",

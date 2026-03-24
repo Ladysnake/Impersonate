@@ -18,13 +18,11 @@
 package org.ladysnake.impersonate.impl;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -34,7 +32,10 @@ import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.CopyableComponent;
@@ -104,7 +105,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     private void setImpersonatedProfile(@Nullable GameProfile profile) {
         if (this.getImpersonatedProfile() != profile) {
             this.impersonatedProfile = profile;
-            this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().getId(), this.impersonatedProfile.getName());
+            this.editedProfile = profile == null ? null : new GameProfile(this.getActualProfile().id(), this.impersonatedProfile.name());
             this.syncChanges(profile);
         }
     }
@@ -120,7 +121,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     private void applyCapeGamerule(ServerPlayerEntity player, GameProfile impersonatedProfile) {
-        if (!player.getServerWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
+        if (!player.getEntityWorld().getGameRules().getValue(ImpersonateGamerules.FAKE_CAPES)) {
             if (impersonatedProfile == null) {
                 ((PlayerEntityExtensions) player).impersonate_resetCape();
             } else {
@@ -130,8 +131,8 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     private void updatePlayerLists(Packet<ClientPlayPacketListener> packet) {
-        if (!player.getWorld().isClient) {
-            PlayerManager playerManager = ((ServerPlayerEntity) player).server.getPlayerManager();
+        if (!player.getEntityWorld().isClient()) {
+            PlayerManager playerManager = ((ServerPlayerEntity) player).getEntityWorld().getServer().getPlayerManager();
             if (isAloneOnServer(playerManager)) {
                 playerManager.sendToAll(packet);
             }
@@ -196,7 +197,7 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
 
     @Override
     public boolean shouldSyncWith(ServerPlayerEntity player) {
-        return player == this.player || player.server.getPlayerManager().isOperator(player.getGameProfile());
+        return player == this.player || player.getEntityWorld().getServer().getPlayerManager().isOperator(player.getPlayerConfigEntry());
     }
 
     @Override
@@ -218,34 +219,37 @@ public class PlayerImpersonator implements Impersonator, AutoSyncedComponent, Co
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        if (tag.contains("impersonations", NbtElement.LIST_TYPE)) {
+    public void readData(ReadView readView) {
+        ReadView.TypedListReadView<ImpersonationData> impersonationsView = readView.getTypedListView("impersonations", ImpersonationData.CODEC);
+
+        if (!impersonationsView.isEmpty()) {
             this.stopImpersonations();
-            NbtList impersonations = tag.getList("impersonations", NbtElement.COMPOUND_TYPE);
-            for (int i = 0; i < impersonations.size(); i++) {
-                NbtCompound nbtEntry = impersonations.getCompound(i);
-                Identifier key = Identifier.tryParse(nbtEntry.getString("impersonation_key"));
-                if (key != null) {
-                    ProfileComponent.CODEC
-                        .parse(NbtOps.INSTANCE, nbtEntry)
-                        .resultOrPartial(err -> Impersonate.LOGGER.error("Failed to load impersonated profile: {}", err))
-                        .ifPresent(profile -> this.stackedImpersonations.put(key, profile.gameProfile()));
-                }
+
+            for (ImpersonationData impersonation : impersonationsView) {
+                this.stackedImpersonations.put(impersonation.key(), impersonation.profile());
             }
             this.resetImpersonation();
         }
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void writeData(WriteView writeView) {
         if (this.isImpersonating()) {
-            NbtList profiles = new NbtList();
+            WriteView.ListAppender<ImpersonationData> profiles = writeView.getListAppender("impersonations", ImpersonationData.CODEC);
             for (var entry : this.stackedImpersonations.entrySet()) {
-                NbtCompound nbtEntry = (NbtCompound) ProfileComponent.CODEC.encodeStart(NbtOps.INSTANCE, new ProfileComponent(entry.getValue())).getOrThrow();
-                nbtEntry.putString("impersonation_key", entry.getKey().toString());
-                profiles.add(nbtEntry);
+                profiles.add(new ImpersonationData(entry));
             }
-            tag.put("impersonations", profiles);
+        }
+    }
+
+    record ImpersonationData(Identifier key, GameProfile profile) {
+        static Codec<ImpersonationData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Identifier.CODEC.fieldOf("impersonation_key").forGetter(ImpersonationData::key),
+            ((MapCodec.MapCodecCodec<GameProfile>)Codecs.GAME_PROFILE_CODEC).codec().forGetter(ImpersonationData::profile)
+        ).apply(instance, ImpersonationData::new));
+
+        ImpersonationData(Map.Entry<Identifier, GameProfile> entry) {
+            this(entry.getKey(), entry.getValue());
         }
     }
 }

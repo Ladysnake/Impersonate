@@ -22,9 +22,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.SaveProperties;
 import org.ladysnake.impersonate.impl.ImpersonateGamerules;
 import org.ladysnake.impersonate.impl.RecipientAwareText;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,10 +35,11 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements CommandOutput {
     @Shadow
-    public abstract GameRules getGameRules();
+    public abstract ServerWorld getOverworld();
 
     @Shadow
-    public abstract ServerWorld getOverworld();
+    @Final
+    protected SaveProperties saveProperties;
 
     @ModifyVariable(method = "sendMessage", at = @At("HEAD"), argsOnly = true)
     private Text revealImpersonatorsInMessages(Text message) {
@@ -56,7 +58,7 @@ public abstract class MinecraftServerMixin implements CommandOutput {
 
     @Unique
     private Text impersonate$reveal(Text message) {
-        if (this.getOverworld() == null || this.getGameRules().getBoolean(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
+        if (this.getOverworld() == null || this.saveProperties.getGameRules().getValue(ImpersonateGamerules.LOG_REVEAL_IMPERSONATIONS)) {
             return ((RecipientAwareText) message).impersonateResolveAll(this);
         }
         return message;

@@ -17,41 +17,38 @@
  */
 package org.ladysnake.impersonate.impl;
 
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.rule.GameRule;
+import org.ladysnake.impersonate.Impersonate;
 import org.ladysnake.impersonate.Impersonator;
 
 public final class ImpersonateGamerules {
-    public static final GameRules.Key<GameRules.BooleanRule> FAKE_CAPES =
-        register("fakeCapes", GameRuleFactory.createBooleanRule(false, (server, rule) -> {
+    public static final GameRule<Boolean> FAKE_CAPES = GameRuleBuilder.forBoolean(false).buildAndRegister(Impersonate.id("fake_capes"));
+
+    public static final GameRule<Boolean> OP_REVEAL_IMPERSONATIONS =
+        GameRuleBuilder.forBoolean(true).buildAndRegister(Impersonate.id("op_reveal_impersonations"));
+
+    public static final GameRule<Boolean> LOG_REVEAL_IMPERSONATIONS =
+        GameRuleBuilder.forBoolean(true).buildAndRegister(Impersonate.id("log_reveal_impersonations"));
+
+    public static void init() {
+        GameRuleEvents.changeCallback(FAKE_CAPES).register((value, server) -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (rule.get()) {
+                if (value) {
                     ((PlayerEntityExtensions) player).impersonate_resetCape();
                 } else {
                     ((PlayerEntityExtensions) player).impersonate_disableCape();
                 }
             }
-        }));
-
-    public static final GameRules.Key<GameRules.BooleanRule> OP_REVEAL_IMPERSONATIONS =
-        register("opRevealImpersonations", GameRuleFactory.createBooleanRule(true, (server, rule) -> {
+        });
+        GameRuleEvents.changeCallback(OP_REVEAL_IMPERSONATIONS).register((value, server) -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 if (Impersonator.get(player) instanceof PlayerImpersonator playerImpersonator) {
                     playerImpersonator.syncChanges(playerImpersonator.getImpersonatedProfile());
                 }
             }
-        }));
-
-    public static final GameRules.Key<GameRules.BooleanRule> LOG_REVEAL_IMPERSONATIONS =
-        register("logRevealImpersonations", GameRuleFactory.createBooleanRule(true));
-
-    private static <T extends GameRules.Rule<T>> GameRules.Key<T> register(String name, GameRules.Type<T> type) {
-        return GameRuleRegistry.register("impersonate:" + name, GameRules.Category.PLAYER, type);
-    }
-
-    public static void init() {
-        // NO-OP
+        });
     }
 }

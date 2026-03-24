@@ -22,7 +22,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.ladysnake.impersonate.Impersonator;
 import org.ladysnake.impersonate.impl.ImpersonateGamerules;
@@ -37,15 +36,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerPlayerEntityMixin extends PlayerEntity implements PlayerEntityExtensions {
 
     @Shadow
-    public abstract ServerWorld getServerWorld();
+    public abstract ServerWorld getEntityWorld();
 
-    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
-        super(world, pos, yaw, profile);
+    public ServerPlayerEntityMixin(World world, GameProfile profile) {
+        super(world, profile);
     }
 
     @Inject(method = "setClientOptions", at = @At("RETURN"))
     private void removeCapeIfDisallowed(SyncedClientOptions clientOptions, CallbackInfo ci) {
-        if (Impersonator.get(this).isImpersonating() && !this.getServerWorld().getGameRules().getBoolean(ImpersonateGamerules.FAKE_CAPES)) {
+        if (Impersonator.get(this).isImpersonating() && !this.getEntityWorld().getGameRules().getValue(ImpersonateGamerules.FAKE_CAPES)) {
             this.impersonate_disableCape();
         }
     }

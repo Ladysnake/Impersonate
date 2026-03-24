@@ -15,20 +15,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package org.ladysnake.impersonate.impl.mixin.client;
 
-import com.mojang.authlib.GameProfile;
-import net.minecraft.server.integrated.IntegratedPlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import org.ladysnake.impersonate.Impersonator;
+package org.ladysnake.impersonate.impl.mixin;
+
+import com.google.common.collect.Multimap;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(IntegratedPlayerManager.class)
-public abstract class IntegratedPlayerManagerMixin {
-    @Redirect(method = "savePlayerData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getGameProfile()Lcom/mojang/authlib/GameProfile;"))
-    private GameProfile resolveText(ServerPlayerEntity player) {
-        return Impersonator.get(player).getActualProfile();
-    }
+@Mixin(PropertyMap.class)
+public interface PropertyMapAccessor {
+    @Accessor
+    @Mutable
+    void setProperties(Multimap<String, Property> value);
 }

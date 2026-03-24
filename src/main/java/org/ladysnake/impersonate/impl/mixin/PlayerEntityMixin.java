@@ -21,8 +21,8 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.PlayerLikeEntity;
 import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -35,17 +35,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
-public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityExtensions {
+public abstract class PlayerEntityMixin extends PlayerLikeEntity implements PlayerEntityExtensions {
     @Shadow
     @Final
     private GameProfile gameProfile;
-
-    @Shadow
-    @Final
-    protected static TrackedData<Byte> PLAYER_MODEL_PARTS;
 
     @Unique
     private boolean wantsCapeDisplay;
@@ -63,19 +58,19 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     public void impersonate_resetCape() {
         if (this.wantsCapeDisplay) {
             DataTracker dataTracker = this.getDataTracker();
-            byte modelMask = dataTracker.get(PLAYER_MODEL_PARTS);
+            byte modelMask = dataTracker.get(PLAYER_MODE_CUSTOMIZATION_ID);
             byte newModelMask = (byte) (modelMask | 1);
-            dataTracker.set(PLAYER_MODEL_PARTS, newModelMask);
+            dataTracker.set(PLAYER_MODE_CUSTOMIZATION_ID, newModelMask);
         }
     }
 
     @Override
     public void impersonate_disableCape() {
         DataTracker dataTracker = this.getDataTracker();
-        byte modelMask = dataTracker.get(PLAYER_MODEL_PARTS);
+        byte modelMask = dataTracker.get(PLAYER_MODE_CUSTOMIZATION_ID);
         this.wantsCapeDisplay = (modelMask & 1) != 0;
         byte newModelMask = (byte) (modelMask & ~1);
-        dataTracker.set(PLAYER_MODEL_PARTS, newModelMask);
+        dataTracker.set(PLAYER_MODE_CUSTOMIZATION_ID, newModelMask);
     }
 
     @ModifyReturnValue(method = "getName", at = @At("RETURN"))
@@ -83,7 +78,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         PlayerEntity self = ((PlayerEntity) (Object) this);
         if (Impersonator.get(self).isImpersonating()) {
             // if the client is aware that there is an impersonation, they should display it
-            return MutableText.of(ImpersonateTextContent.get(self, getWorld().isClient));
+            return MutableText.of(ImpersonateTextContent.get(self, getEntityWorld().isClient()));
         }
         return original;
     }

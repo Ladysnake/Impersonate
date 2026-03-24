@@ -17,31 +17,40 @@
  */
 package org.ladysnake.impersonate.impl;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
+import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
+import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.HealthUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.chunk.ChunkManager;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.ladysnake.impersonate.Impersonate;
 import org.ladysnake.impersonate.Impersonator;
 import org.ladysnake.impersonate.impl.mixin.EntityTrackerAccessor;
+import org.ladysnake.impersonate.impl.mixin.PropertyMapAccessor;
 import org.ladysnake.impersonate.impl.mixin.ServerChunkLoadingManagerAccessor;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -49,8 +58,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -73,33 +85,37 @@ public final class ServerPlayerSkins {
         CompletableFuture<?> previousSkinTask = currentSkinTask;
         currentSkinTask = CompletableFuture.<Pair<String, String>>supplyAsync(() -> {
             try {
-                HttpURLConnection connection = (HttpURLConnection) new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + profile.getId().toString().replace("-", "") + "?unsigned=false").openConnection();
+                HttpURLConnection connection = (HttpURLConnection) new URI("https://sessionserver.mojang.com/session/minecraft/profile/" + profile.id().toString().replace("-", "") + "?unsigned=false").toURL().openConnection();
 
                 if (connection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
-                    String reply = IOUtils.toString(new InputStreamReader(connection.getInputStream()));
-                    JsonObject json = JsonHelper.deserialize(reply);
-                    for (JsonElement prop : JsonHelper.getArray(json, "properties")) {
-                        JsonObject property = JsonHelper.asObject(prop, "property");
-                        if (JsonHelper.getString(property, "name").equals("textures")) {
-                            return Pair.of(
-                                JsonHelper.getString(property, "value"),
-                                JsonHelper.getString(property, "signature")
-                            );
+                    try (var in = new InputStreamReader(connection.getInputStream())) {
+                        String reply = IOUtils.toString(in);
+                        JsonObject json = JsonHelper.deserialize(reply);
+                        for (JsonElement prop : JsonHelper.getArray(json, "properties")) {
+                            JsonObject property = JsonHelper.asObject(prop, "property");
+                            if (JsonHelper.getString(property, "name").equals("textures")) {
+                                return Pair.of(
+                                    JsonHelper.getString(property, "value"),
+                                    JsonHelper.getString(property, "signature")
+                                );
+                            }
                         }
+                        throw new JsonSyntaxException("No skin texture data in response for " + profile.name());
                     }
-                    throw new JsonSyntaxException("No skin texture data in response for " + profile.getName());
                 } else {
                     return Pair.of(null, null);    // no throwing exception to avoid spamming logs when offline
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException(e);
             }
         }, THREADPOOL).exceptionally(e -> {
-            Impersonate.LOGGER.error("Failed to retrieve skin for " + profile.getName(), e);
+            Impersonate.LOGGER.error("Failed to retrieve skin for {}", profile.name(), e);
             return Pair.of(null, null);
         });
         // we wait for the previous skin fetching to complete, to avoid setting skins in the wrong order
-        currentSkinTask.thenAcceptBothAsync(previousSkinTask, (pair, o) -> setPlayerSkin(player, pair.getFirst(), pair.getSecond()), player.getWorld().getServer());
+        currentSkinTask.thenAcceptBothAsync(previousSkinTask, (pair, o) -> setPlayerSkin(player, pair.getFirst(), pair.getSecond()), player.getEntityWorld().getServer());
     }
 
     /**
@@ -110,18 +126,39 @@ public final class ServerPlayerSkins {
      * @param signature skin texture signature
      */
     private static void setPlayerSkin(ServerPlayerEntity player, @Nullable String value, @Nullable String signature) {
-        PropertyMap realProperties = Impersonator.get(player).getActualProfile().getProperties();
-        PropertyMap editedProperties = Impersonator.get(player).getEditedProfile().getProperties();
-        realProperties.removeAll("textures");
-        editedProperties.removeAll("textures");
+        try {
+            Impersonator impersonator = Impersonator.get(player);
+            GameProfile actualProfile = impersonator.getActualProfile();
+            GameProfile editedProfile = impersonator.getEditedProfile();
+            ImmutableMultimap.Builder<String, Property> realProperties = propertiesWithoutTextures(actualProfile);
+            ImmutableMultimap.Builder<String, Property> editedProperties = propertiesWithoutTextures(editedProfile);
 
-        if (value != null && signature != null) {
-            realProperties.put("textures", new Property("textures", value, signature));
-            editedProperties.put("textures", new Property("textures", value, signature));
+            if (value != null && signature != null) {
+                realProperties.put("textures", new Property("textures", value, signature));
+                editedProperties.put("textures", new Property("textures", value, signature));
+            }
+
+            ((PropertyMapAccessor) actualProfile.properties()).setProperties(realProperties.build());
+            ((PropertyMapAccessor) editedProfile.properties()).setProperties(editedProperties.build());
+
+            // Reloading is needed in order to see the new skin
+            reloadSkin(player);
+        } catch (Throwable e) {
+            Impersonate.LOGGER.error("Failed to set skin for {}", player.getName(), e);
+            throw e;
+        }
+    }
+
+    private static ImmutableMultimap.@NonNull Builder<String, Property> propertiesWithoutTextures(@NotNull GameProfile profile) {
+        ImmutableMultimap.Builder<String, Property> builder = ImmutableMultimap.<String, Property>builder();
+
+        for (Map.Entry<String, Collection<Property>> entry : profile.properties().asMap().entrySet()) {
+            if (!entry.getKey().equals("textures")) {
+                builder.putAll(entry.getKey(), entry.getValue());
+            }
         }
 
-        // Reloading is needed in order to see the new skin
-        reloadSkin(player);
+        return builder;
     }
 
     /**
@@ -130,15 +167,14 @@ public final class ServerPlayerSkins {
      * @param player player that wants to have the skin reloaded
      */
     private static void reloadSkin(ServerPlayerEntity player) {
-        for (ServerPlayerEntity other : Objects.requireNonNull(player.getServer()).getPlayerManager().getPlayerList()) {
+        for (ServerPlayerEntity other : Objects.requireNonNull(player.getEntityWorld().getServer()).getPlayerManager().getPlayerList()) {
             // Refreshing tablist for each player
             other.networkHandler.sendPacket(new PlayerRemoveS2CPacket(List.of(player.getUuid())));
             other.networkHandler.sendPacket(PlayerListS2CPacket.entryFromPlayer(List.of(player)));
         }
 
-        ChunkManager manager = player.getWorld().getChunkManager();
-        assert manager instanceof ServerChunkManager;
-        ServerChunkLoadingManager storage = ((ServerChunkManager) manager).chunkLoadingManager;
+        ServerChunkManager manager = player.getEntityWorld().getChunkManager();
+        ServerChunkLoadingManager storage = manager.chunkLoadingManager;
         EntityTrackerAccessor trackerEntry = ((ServerChunkLoadingManagerAccessor) storage).getEntityTrackers().get(player.getId());
 
         for (ServerPlayerEntity tracking : PlayerLookup.tracking(player)) {
@@ -154,7 +190,8 @@ public final class ServerPlayerSkins {
 
     private static void reloadSkinVanilla(ServerPlayerEntity player) {
         // need to change the player entity on the client
-        ServerWorld targetWorld = (ServerWorld) player.getWorld();
+        ServerWorld targetWorld = player.getEntityWorld();
+        MinecraftServer server = Objects.requireNonNull(targetWorld.getServer());
         player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(
             new CommonPlayerSpawnInfo(
                 targetWorld.getDimensionEntry(),
@@ -171,16 +208,16 @@ public final class ServerPlayerSkins {
             PlayerRespawnS2CPacket.KEEP_ATTRIBUTES
         ));
         player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
-        player.server.getPlayerManager().sendCommandTree(player);
+        server.getPlayerManager().sendCommandTree(player);
         player.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(player.experienceProgress, player.totalExperience, player.experienceLevel));
         player.networkHandler.sendPacket(new HealthUpdateS2CPacket(player.getHealth(), player.getHungerManager().getFoodLevel(), player.getHungerManager().getSaturationLevel()));
         for (StatusEffectInstance statusEffect : player.getStatusEffects()) {
             player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), statusEffect, true));
         }
         player.sendAbilitiesUpdate();
-        player.server.getPlayerManager().sendWorldInfo(player, targetWorld);
+        server.getPlayerManager().sendWorldInfo(player, targetWorld);
         Entity vehicle = player.getVehicle();
         if (vehicle != null) player.networkHandler.sendPacket(new EntityPassengersSetS2CPacket(vehicle));
-        player.server.getPlayerManager().sendPlayerStatus(player);
+        server.getPlayerManager().sendPlayerStatus(player);
     }
 }

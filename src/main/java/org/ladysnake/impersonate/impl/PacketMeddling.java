@@ -41,7 +41,7 @@ public final class PacketMeddling {
     public static void resolvePlayerListEntries(PlayerListS2CPacket packet, ServerPlayerEntity player) {
         boolean reveal = ImpersonateTextContent.shouldBeRevealedBy(player);
         for (PlayerListS2CPacket.Entry entry : packet.getEntries()) {
-            PlayerEntity playerEntry = player.server.getPlayerManager().getPlayer(entry.profileId());
+            PlayerEntity playerEntry = player.getEntityWorld().getServer().getPlayerManager().getPlayer(entry.profileId());
             if (playerEntry != null) {
                 Impersonator impersonator = Impersonator.get(playerEntry);
                 if (impersonator.isImpersonating()) {
@@ -79,6 +79,7 @@ public final class PacketMeddling {
         // God, I wish we had a Record#copy method in this language
         // And yes we need to do a deep copy at the end, to avoid sharing text references
         return copyPacket(new ChatMessageS2CPacket(
+            chatPacket.globalIndex(),
             chatPacket.sender(),
             chatPacket.index(),
             chatPacket.signature(),

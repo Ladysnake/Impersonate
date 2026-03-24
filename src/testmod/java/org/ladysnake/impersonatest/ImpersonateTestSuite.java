@@ -18,7 +18,7 @@
 package org.ladysnake.impersonatest;
 
 import com.mojang.authlib.GameProfile;
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
 import net.minecraft.network.encryption.Signer;
@@ -32,14 +32,12 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
-import org.ladysnake.elmendorf.GameTestUtil;
 import org.ladysnake.elmendorf.impl.MockClientConnection;
 import org.ladysnake.impersonate.Impersonate;
 import org.ladysnake.impersonate.Impersonator;
@@ -52,33 +50,33 @@ import java.time.Instant;
 import java.util.BitSet;
 import java.util.UUID;
 
-public class ImpersonateTestSuite implements FabricGameTest {
+public class ImpersonateTestSuite {
 
     public static final Identifier IMPERSONATION_KEY = Impersonatest.id("key");
 
-    @GameTest(templateName = EMPTY_STRUCTURE)
+    @GameTest
     public void nameChanges(TestContext ctx) {
         GameProfile profile = new GameProfile(UUID.randomUUID(), "impersonated");
         ServerPlayerEntity player = ctx.spawnServerPlayer(1, 0, 1);
         Text formerName = player.getDisplayName();
         Impersonator impersonator = player.getComponent(Impersonate.IMPERSONATION);
         impersonator.impersonate(IMPERSONATION_KEY, profile);
-        GameTestUtil.assertTrue("Expected player to have name 'impersonated', was %s".formatted(player.getDisplayName()), "impersonated".equals(player.getDisplayName().getString()));
+        ctx.assertTrue("Expected player to have name 'impersonated', was %s".formatted(player.getDisplayName()), "impersonated".equals(player.getDisplayName().getString()));
         impersonator.stopImpersonation(IMPERSONATION_KEY);
-        GameTestUtil.assertTrue("Expected player to have name %s, was %s".formatted(formerName, player.getDisplayName()), formerName.equals(player.getDisplayName()));
+        ctx.assertTrue("Expected player to have name %s, was %s".formatted(formerName, player.getDisplayName()), formerName.equals(player.getDisplayName()));
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE)
+    @GameTest
     public void nameGetsRevealed(TestContext ctx) {
         ServerPlayerEntity player = ctx.spawnServerPlayer(1, 0, 1);
         TextContent textContent = ImpersonateTextContent.get(player);
         ctx.getWorld().getServer().sendMessage(Text.translatable("a", MutableText.of(textContent)));
-        GameTestUtil.assertTrue("Text content should be revealed", ((ImpersonateTextContent) textContent).isRevealed());
+        ctx.assertTrue("Text content should be revealed", ((ImpersonateTextContent) textContent).isRevealed());
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE)
+    @GameTest
     public void nameInChatGetsRevealed(TestContext ctx) throws NoSuchAlgorithmException {
         // Do the bare minimum to simulate a legit client with a valid keypair
         UUID senderUuid = UUID.randomUUID();
@@ -102,7 +100,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
         try {
             playerManager.getPlayerList().add(player);
             playerManager.getPlayerList().add(otherPlayer);
-            playerManager.addToOperators(player.getGameProfile());
+            playerManager.addToOperators(player.getPlayerConfigEntry());
             player.networkHandler.onChatMessage(chatMessagePacket);
             ctx.verifyConnection(player, conn -> conn.sent(
                 ChatMessageS2CPacket.class,
@@ -116,7 +114,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
             );
             ctx.complete();
         } finally {
-            playerManager.removeFromOperators(player.getGameProfile());
+            playerManager.removeFromOperators(player.getPlayerConfigEntry());
             playerManager.getPlayerList().remove(player);
             playerManager.getPlayerList().remove(otherPlayer);
         }
@@ -136,7 +134,7 @@ public class ImpersonateTestSuite implements FabricGameTest {
             timestamp,
             salt,
             messagePacker.pack(new MessageBody(text, timestamp, salt, lastSeenMessages)),
-            new LastSeenMessageList.Acknowledgment(0, new BitSet())
+            new LastSeenMessageList.Acknowledgment(0, new BitSet(), (byte) 0)
         );
         return chatMessagePacket;
     }

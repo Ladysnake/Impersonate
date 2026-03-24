@@ -22,7 +22,6 @@ import net.minecraft.server.command.ListCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
-import org.ladysnake.impersonate.Impersonate;
 import org.ladysnake.impersonate.Impersonator;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,7 +46,7 @@ public abstract class ListCommandMixin {
 
                 if (impersonatedProfile != null) {
                     // Name is already covered by PlayerEntity#getName mixin
-                    args[1] = impersonatedProfile.getId();
+                    args[1] = impersonatedProfile.id();
                 }
             }
         }

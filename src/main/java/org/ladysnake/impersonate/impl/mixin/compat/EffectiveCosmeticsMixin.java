@@ -43,11 +43,11 @@ public abstract class EffectiveCosmeticsMixin {
     private static void spoofUuid(PlayerEntity player, CallbackInfoReturnable<@Nullable PlayerCosmeticData> cir) {
         GameProfile impersonatedProfile = Impersonator.get(player).getImpersonatedProfile();
         if (impersonatedProfile != null) {
-            if (player.isPartVisible(PlayerModelPart.CAPE)) {
+            if (player.isModelPartVisible(PlayerModelPart.CAPE)) {
                 // if impersonate:showCapes is false, capes will never be visible, and cosmetics should not be either
                 // if it is true, impersonators have to choose between both cape and cosmetics, or neither
                 // not perfect but synchronizing the gamerule would be quite annoying for little benefit
-                cir.setReturnValue(PLAYER_COSMETICS.get(impersonatedProfile.getId()));
+                cir.setReturnValue(PLAYER_COSMETICS.get(impersonatedProfile.id()));
             } else {
                 cir.setReturnValue(null);
             }

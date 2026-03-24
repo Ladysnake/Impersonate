@@ -20,8 +20,6 @@ package org.ladysnake.impersonate.impl.mixin;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.ladysnake.impersonate.Impersonator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,12 +27,11 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
-    @Redirect(method = "loadPlayerData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getGameProfile()Lcom/mojang/authlib/GameProfile;"))
-    private GameProfile resolvePlayerName(ServerPlayerEntity player) {
+//    @Redirect(method = "loadPlayerData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;get()Lcom/mojang/authlib/GameProfile;")) private GameProfile resolvePlayerName(ServerPlayerEntity player) {
+//        return Impersonator.get(player).getActualProfile();
+//    }
+    @Redirect(method = "createStatHandler", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getGameProfile()Lcom/mojang/authlib/GameProfile;"))
+    private GameProfile resolvePlayerStatsName(PlayerEntity player) {
         return Impersonator.get(player).getActualProfile();
-    }
-    @Redirect(method = "createStatHandler", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getName()Lnet/minecraft/text/Text;"))
-    private Text resolvePlayerStatsName(PlayerEntity player) {
-        return Text.literal(Impersonator.get(player).getActualProfile().getName());
     }
 }

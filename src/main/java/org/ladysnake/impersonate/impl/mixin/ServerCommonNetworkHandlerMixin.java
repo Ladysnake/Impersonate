@@ -42,7 +42,7 @@ public abstract class ServerCommonNetworkHandlerMixin {
     @Final
     protected MinecraftServer server;
 
-    @ModifyArg(method = "send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;Z)V"))
+    @ModifyArg(method = "send", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/packet/Packet;Lio/netty/channel/ChannelFutureListener;Z)V"))
     private Packet<?> resolveFakeTextsInPackets(Packet<?> packet) {
         if (((Object) this) instanceof ServerPlayNetworkHandler self) {
             ServerPlayerEntity player = self.player;

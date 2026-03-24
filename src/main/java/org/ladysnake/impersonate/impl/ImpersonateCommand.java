@@ -24,6 +24,8 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.command.permission.PermissionLevel;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -75,10 +77,10 @@ public final class ImpersonateCommand {
                     )
                 )
                 .then(literal("query")
-                    .requires(Permissions.require("impersonate.command.disguise.query.self", 2))
+                    .requires(Permissions.require("impersonate.command.disguise.query.self", PermissionLevel.GAMEMASTERS))
                     .executes(context -> queryImpersonation(context.getSource(), context.getSource().getPlayer(), null))
                     .then(argument("target", EntityArgumentType.player())
-                        .requires(Permissions.require("impersonate.command.disguise.query", 2))
+                        .requires(Permissions.require("impersonate.command.disguise.query", PermissionLevel.GAMEMASTERS))
                         .executes(context -> queryImpersonation(context.getSource(), EntityArgumentType.getPlayer(context, "target"), null))
                         .then(argument("key", IdentifierArgumentType.identifier())
                             .executes(context -> queryImpersonation(context.getSource(), EntityArgumentType.getPlayer(context, "target"), IdentifierArgumentType.getIdentifier(context, "key")))
@@ -101,7 +103,7 @@ public final class ImpersonateCommand {
             : "query",
             profile == null
             ? ""
-            : profile.getName());
+            : profile.name());
         return profile == null ? 1 : 0;
     }
 
@@ -117,7 +119,7 @@ public final class ImpersonateCommand {
                 impersonated = impersonator.stopImpersonation(key);
             }
             if (impersonated != null) {
-                sendImpersonationFeedback(source, player, "clear", impersonated.getName());
+                sendImpersonationFeedback(source, player, "clear", impersonated.name());
                 ++count;
             }
         }
@@ -132,10 +134,10 @@ public final class ImpersonateCommand {
         }
     }
 
-    private static int startImpersonation(ServerCommandSource source, Collection<GameProfile> profiles, Collection<ServerPlayerEntity> players, Identifier impersonationKey) throws CommandSyntaxException {
+    private static int startImpersonation(ServerCommandSource source, Collection<PlayerConfigEntry> profiles, Collection<ServerPlayerEntity> players, Identifier impersonationKey) throws CommandSyntaxException {
         assert !profiles.isEmpty();
-        Iterator<GameProfile> it = profiles.iterator();
-        GameProfile disguise = it.next();
+        Iterator<PlayerConfigEntry> it = profiles.iterator();
+        PlayerConfigEntry disguise = it.next();
         if (it.hasNext()) {
             throw EntityArgumentType.TOO_MANY_PLAYERS_EXCEPTION.create();
         }
@@ -143,7 +145,7 @@ public final class ImpersonateCommand {
         stopImpersonation(source, players, impersonationKey);
         for (ServerPlayerEntity player : players) {
             Impersonator.get(player).impersonate(impersonationKey, disguise);
-            sendImpersonationFeedback(source, player, "start", disguise.getName());
+            sendImpersonationFeedback(source, player, "start", disguise.name());
             ++count;
         }
         return count;

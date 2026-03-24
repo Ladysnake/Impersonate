@@ -42,7 +42,7 @@ public interface TextMixin extends RecipientAwareText {
     @Override
     default Text impersonateResolveAll(CommandOutput recipient) {
         MutableText text = this.copy();
-        ((RecipientAwareText)text).impersonateResolve(recipient);
+        ((RecipientAwareText)(Text) text).impersonateResolve(recipient);
         for (Text sibling : this.getSiblings()) {
             text.append(((RecipientAwareText) sibling).impersonateResolveAll(recipient));
         }

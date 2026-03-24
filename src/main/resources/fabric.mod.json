@@ -40,10 +40,10 @@
     }
   ],
   "depends": {
-    "minecraft": ">=1.21-",
+    "minecraft": "1.21.11",
     "fabric": "*",
-    "cardinal-components-base": "^6.0.0-",
-    "cardinal-components-entity": "^6.0.0-",
+    "cardinal-components-base": "^7.0.0-",
+    "cardinal-components-entity": "^7.0.0-",
     "fabric-permissions-api-v0": "*"
   },
   "custom": {
